@@ -1,18 +1,15 @@
 name: Sync y Deploy
-
 on:
   push:
     branches: [frontend, backend]
-
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4        # ← v4 usa Node.js 20+ y evita el warning
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Configurar Git
         run: |
           git config user.name "github-actions"
@@ -28,6 +25,7 @@ jobs:
       - name: Copiar dist a master/public
         if: github.ref_name == 'frontend'
         run: |
+          git fetch origin master
           git checkout master
           rm -rf public/*
           cp -r dist/* public/
@@ -39,14 +37,10 @@ jobs:
       - name: Sync backend a master
         if: github.ref_name == 'backend'
         run: |
+          git fetch origin master
           git checkout master
-
-          # Traer archivos del backend UNO POR UNO, sin merge
           git checkout origin/backend -- .
-
-          # Restaurar public/ desde master para no pisarlo
           git checkout HEAD -- public/ || true
-
           git add -A
           git diff --staged --quiet || git commit -m "sync: backend → master"
           git push origin master
