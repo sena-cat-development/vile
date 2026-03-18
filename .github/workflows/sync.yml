@@ -2,6 +2,10 @@ name: Sync y Deploy
 on:
   push:
     branches: [frontend, backend]
+
+permissions:
+  contents: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
