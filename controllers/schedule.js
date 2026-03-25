@@ -1177,13 +1177,6 @@ ioInstance.emit('agenda-legalizada', {
                 user: req.user?._id // opcional si usas auth
             })
 
-            // (opcional) actualizar estado general
-            schedule.status = {
-                ...schedule.status,
-                data: 'RADICADO',
-                index: 5
-            }
-
             await schedule.save()
 
             return res.status(201).json(schedule)
@@ -1193,6 +1186,36 @@ ioInstance.emit('agenda-legalizada', {
             return res.status(500).json({
                 message: 'Error al agregar radicación'
             })
+        }
+    },
+
+    editRadication: async (req, res) => {
+        try {
+            const { scheduleId, radicationId } = req.params
+            const { status, radicationNumber } = req.body
+
+            const schedule = await Schedule.findById(scheduleId)
+
+            if (!schedule) {
+                return res.status(404).json({ message: 'Agenda no encontrada' })
+            }
+
+            const radication = schedule.radications.id(radicationId)
+
+            if (!radication) {
+                return res.status(404).json({ message: 'Radicación no encontrada' })
+            }
+
+            if (status !== undefined) radication.status = status
+            if (radicationNumber !== undefined) radication.radicationNumber = radicationNumber
+
+            await schedule.save()
+
+            return res.status(200).json(schedule)
+
+        } catch (error) {
+            console.error('❌ Error editRadication:', error)
+            return res.status(500).json({ message: 'Error al editar radicación' })
         }
     },
 
