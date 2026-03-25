@@ -81,7 +81,7 @@ middlewares() {
   }
 
   listen() {
-    this.httpServer.listen(process.env.PORT, () => {
+    this.httpServer.listen(process.env.PORT, "0.0.0.0",() => {
       console.log(`🚀 Servidor iniciado en puerto http://localhost:${process.env.PORT}`)
     })
   }
