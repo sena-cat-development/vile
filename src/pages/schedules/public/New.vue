@@ -1205,7 +1205,7 @@ async function createSchedule() {
         if (status !== 200) {
             showNotify(data.msg, 'negative');
         } else if (sign.value.publicWorker !== null) {
-            showNotify('Agenda Creada, pendiente por aprobación del ordenador del gasto', 'positive', 'check_circle');
+            showNotify('Agenda Creada, pendiente por legalizar', 'positive', 'check_circle');
             await cleanDialog();
             showDialog.value = false;
             confirm.value = false;

@@ -776,9 +776,14 @@ const sonIguales = (id1, id2) => {
 // Versión corregida de isAgendaDelUsuario
 const isAgendaDelUsuario = (agenda) => {
     if (!currentUser.value?.id) return false
+    const uid = currentUser.value.id
     return (
-        sonIguales(agenda.contractor, currentUser.value.id) ||
-        sonIguales(agenda.official, currentUser.value.id)
+        sonIguales(agenda.contractor, uid) ||
+        sonIguales(agenda.contractor?._id, uid) ||
+        sonIguales(agenda.official, uid) ||
+        sonIguales(agenda.official?._id, uid) ||
+        sonIguales(agenda.publicWorker, uid) ||
+        sonIguales(agenda.publicWorker?._id, uid)
     )
 }
 

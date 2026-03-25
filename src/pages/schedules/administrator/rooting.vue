@@ -1,295 +1,350 @@
     <template>
-        <q-page class="q-pa-md">
+        <q-page class="q-pa-md bg-grey-1">
 
-            <div class="text-h4 text-center q-mb-md">
-                Control De Radicaciones
-            </div>
-
-            <!-- 🔍 FILTROS -->
-            <div class="row items-center q-col-gutter-md q-mb-md">
-
-                <!-- Buscar por nombre -->
-                <div class="col-12 col-md-6">
-                    <q-input v-model="filters.name" label="Buscar por nombre" outlined dense clearable />
-                </div>
-
-                <!-- Botones -->
-                <div class="col-12 col-md-6">
-                    <div class="row justify-end items-center q-gutter-sm">
-
-                        <q-btn color="primary" label="Ir a Radicar" icon="launch" @click="irARadicar" />
-
-                        <q-btn color="teal" label="Descargar Todas Las Comisiones" icon="folder_zip"
-                            :loading="descargandoTodas" @click="descargarTodasComisiones" />
-
-                        <q-btn color="primary" label="Exportar Todas Las Radicaciones" icon="file_download"
-                            @click="exportarExcel" />
-
+            <!-- ═══ ENCABEZADO ═══ -->
+            <div class="row items-center q-mb-lg">
+                <div class="col">
+                    <div class="row items-center q-gutter-sm">
+                        <q-icon name="assignment" size="2rem" color="primary" />
+                        <div>
+                            <div class="text-h5 text-weight-bold text-grey-9">Control de Radicaciones</div>
+                            <div class="text-caption text-grey-6">Gestión y seguimiento de Legalizaciones radicadas</div>
+                        </div>
                     </div>
                 </div>
-
             </div>
 
+            <!-- ═══ PANEL DE FILTROS Y ACCIONES ═══ -->
+            <q-card flat bordered class="q-mb-md">
+                <q-card-section class="q-pa-md">
+                    <div class="row items-center q-col-gutter-md">
 
-            <!-- 📋 TABLA PRINCIPAL (USUARIOS ÚNICOS) -->
-            <q-table title="Usuarios con Agendas" :rows="filteredUsers" :columns="columns" row-key="userId" flat
-                bordered :loading="loading">
-                <template v-slot:body-cell-totalAgendas="props">
-                    <q-td align="center">
-                        <q-badge color="primary" outline>
-                            {{ props.row.totalAgendas }}
-                        </q-badge>
-                    </q-td>
-                </template>
-
-                <template v-slot:body-cell-pendientes="props">
-                    <q-td align="center">
-                        <q-badge :color="props.row.pendientes > 0 ? 'orange' : 'green'" outline>
-                            {{ props.row.pendientes }}
-                        </q-badge>
-                    </q-td>
-                </template>
-
-                <template v-slot:body-cell-actions="props">
-                    <q-td align="center" class="q-gutter-sm">
-
-                        <!-- Ver agendas -->
-                        <q-btn color="primary" icon="visibility" size="sm" round
-                            @click="verLegalizacionesUsuario(props.row)">
-                            <q-tooltip>Ver agendas</q-tooltip>
-                        </q-btn>
-
-                        <!-- Exportar solo este usuario -->
-                        <q-btn color="green" icon="file_download" size="sm" round
-                            @click="exportarExcelUsuario(props.row)">
-                            <q-tooltip>Exportar legalizaciones en excel del contratista</q-tooltip>
-                        </q-btn>
-
-                        <!-- Descargar carpetas ZIP del usuario -->
-                        <q-btn color="teal" icon="folder_zip" size="sm" round
-                            :loading="descargandoUsuario === props.row.userId"
-                            @click="descargarComisionesUsuario(props.row)">
-                            <q-tooltip>Descargar comisiones del contratista</q-tooltip>
-                        </q-btn>
-
-                    </q-td>
-                </template>
-
-
-            </q-table>
-
-            <!-- 🪟 DIALOG -->
-            <q-dialog v-model="dialogLegalizacion" persistent>
-                <q-card style="width: 90vw; max-width: 1200px;">
-
-                    <q-bar>
-                        <div class="text-h6">
-                            Legalizaciones - {{ usuarioSeleccionado?.name }}
-                        </div>
-                        <q-space />
-                        <q-btn dense flat icon="close" v-close-popup />
-                    </q-bar>
-
-                    <q-card-section v-if="loadingLegalizacion" class="text-center q-pa-lg">
-                        <q-spinner size="40px" />
-                    </q-card-section>
-
-                    <q-card-section v-else>
-
-                        <!-- 🔍 FILTRO TRIP ORDER -->
-                        <div class="q-mb-md">
-                            <q-input v-model="filterTripOrderDialog" label="Número De Legalización" outlined dense
-                                clearable />
+                        <!-- Buscar por nombre -->
+                        <div class="col-12 col-md-4">
+                            <q-input v-model="filters.name" label="Buscar por nombre" outlined dense clearable
+                                bg-color="white">
+                                <template v-slot:prepend>
+                                    <q-icon name="search" color="grey-6" />
+                                </template>
+                            </q-input>
                         </div>
 
-                        <!-- 📋 TABLA LEGALIZACIONES -->
-                        <q-table title="Agendas del usuario" :rows="agendasUsuarioFiltradas"
-                            :columns="columnsLegalizacion" row-key="_id" flat bordered>
-                            <!-- 🔹 ESTADO DE RADICACIÓN -->
-                            <template v-slot:body-cell-estadoRadicacion="props">
-                                <q-td align="center">
-                                    <q-badge
-                                        :color="getLastRadication(props.row)?.status === 'RADICADO' ? 'green' : 'orange'"
-                                        outline>
-                                        {{ getLastRadication(props.row)?.status || 'NO RADICADO' }}
-                                    </q-badge>
-                                </q-td>
-                            </template>
+                        <!-- Acciones principales -->
+                        <div class="col-12 col-md-8">
+                            <div class="row justify-end items-center q-gutter-sm">
 
-                            <!-- 🔹 NÚMERO DE RADICACIÓN -->
-                            <template v-slot:body-cell-numeroRadicacion="props">
-                                <q-td align="center">
-                                    <div class="row items-center no-wrap q-gutter-sm justify-center">
+                                <q-btn unelevated color="indigo-6" label="Ir a Radicar" icon="launch"
+                                    @click="irARadicar" />
 
-                                        <!-- ✅ Si EXISTE número -->
-                                        <span v-if="getLastRadication(props.row)?.radicationNumber"
-                                            class="text-weight-medium">
-                                            {{ getLastRadication(props.row).radicationNumber }}
-                                        </span>
+                                <q-btn unelevated color="teal-7" label="Descargar Comisiones" icon="folder_zip"
+                                    :loading="descargandoTodas" @click="descargarTodasComisiones" />
 
-                                        <!-- ⚠️ Si NO existe número -->
-                                        <span v-else class="text-grey-6 text-italic">
-                                            No asignado
-                                        </span>
+                                <q-btn unelevated color="green-7" label="Exportar Excel" icon="file_download"
+                                    @click="exportarExcel" />
 
-                                        <!-- ➕ Agregar número -->
-                                        <q-btn v-if="!getLastRadication(props.row)?.radicationNumber" size="sm" flat
-                                            icon="add" color="primary" @click="abrirDialogRadicacion(props.row)">
-                                            <q-tooltip>Agregar número de radicación</q-tooltip>
-                                        </q-btn>
+                            </div>
+                        </div>
 
-                                        <!-- ✏️ Editar número -->
-                                        <q-btn v-if="getLastRadication(props.row)?.radicationNumber" size="sm" flat
-                                            icon="edit" color="primary" @click="abrirDialogRadicacion(props.row)">
-                                            <q-tooltip>Editar número de radicación</q-tooltip>
-                                        </q-btn>
+                    </div>
+                </q-card-section>
+            </q-card>
+
+            <!-- ═══ TABLA PRINCIPAL ═══ -->
+            <q-card flat bordered>
+                <q-table title="Contratistas con Legalizaciones" :rows="filteredUsers" :columns="columns"
+                    row-key="userId" flat :loading="loading" :rows-per-page-options="[10, 20, 50]"
+                    class="radicaciones-table">
+                    <template v-slot:top-title>
+                        <div class="row items-center q-gutter-sm">
+                            <q-icon name="people" color="primary" />
+                            <span class="text-subtitle1 text-weight-medium">Contratistas con Legalizaciones</span>
+                            <q-badge color="primary" rounded class="q-ml-xs">{{ filteredUsers.length }}</q-badge>
+                        </div>
+                    </template>
+
+                    <template v-slot:body-cell-totalAgendas="props">
+                        <q-td align="center">
+                            <q-chip dense color="primary" text-color="white" icon="event" size="sm">
+                                {{ props.row.totalAgendas }}
+                            </q-chip>
+                        </q-td>
+                    </template>
+
+                    <template v-slot:body-cell-pendientes="props">
+                        <q-td align="center">
+                            <q-chip dense :color="props.row.pendientes > 0 ? 'orange-7' : 'green-7'" text-color="white"
+                                :icon="props.row.pendientes > 0 ? 'hourglass_empty' : 'check_circle'" size="sm">
+                                {{ props.row.pendientes }}
+                            </q-chip>
+                        </q-td>
+                    </template>
+
+                    <template v-slot:body-cell-actions="props">
+                        <q-td align="center">
+                            <div class="row justify-center items-center q-gutter-xs">
+
+                                <q-btn unelevated color="primary" icon="visibility" size="sm" round
+                                    @click="verLegalizacionesUsuario(props.row)">
+                                    <q-tooltip>Ver Legalizaciones</q-tooltip>
+                                </q-btn>
+
+                                <q-btn unelevated color="green-7" icon="file_download" size="sm" round
+                                    @click="exportarExcelUsuario(props.row)">
+                                    <q-tooltip>Exportar Excel del contratista</q-tooltip>
+                                </q-btn>
+
+                                <q-btn unelevated color="teal-7" icon="folder_zip" size="sm" round
+                                    :loading="descargandoUsuario === props.row.userId"
+                                    @click="descargarComisionesUsuario(props.row)">
+                                    <q-tooltip>Descargar comisiones ZIP</q-tooltip>
+                                </q-btn>
+
+                            </div>
+                        </q-td>
+                    </template>
+
+                </q-table>
+            </q-card>
+
+            <!-- ═══ DIALOG: LEGALIZACIONES DEL USUARIO ═══ -->
+            <q-dialog v-model="dialogLegalizacion" persistent transition-show="slide-up" transition-hide="slide-down">
+                <q-card style="width: 92vw; max-width: 1100px; max-height: 90vh">
+
+                    <q-toolbar class="bg-primary text-white">
+                        <q-icon name="assignment_ind" size="sm" class="q-mr-sm" />
+                        <q-toolbar-title>
+                            <span class="text-weight-medium">Legalizaciones de:</span>
+                            <span class="q-ml-xs">{{ usuarioSeleccionado?.name }}</span>
+                        </q-toolbar-title>
+                        <q-btn dense flat round icon="close" v-close-popup />
+                    </q-toolbar>
+
+                    <!-- Loading -->
+                    <div v-if="loadingLegalizacion" class="flex flex-center q-pa-xl">
+                        <div class="text-center">
+                            <q-spinner color="primary" size="50px" />
+                            <div class="text-grey-6 q-mt-md">Cargando Legalizaciones...</div>
+                        </div>
+                    </div>
+
+                    <div v-else class="q-pa-md">
+
+                        <!-- Filtro -->
+                        <q-card flat bordered class="q-mb-md">
+                            <q-card-section class="q-pa-sm">
+                                <q-input v-model="filterTripOrderDialog" label="Filtrar por N° de Legalización" outlined
+                                    dense clearable bg-color="white">
+                                    <template v-slot:prepend>
+                                        <q-icon name="filter_list" color="grey-6" />
+                                    </template>
+                                </q-input>
+                            </q-card-section>
+                        </q-card>
+
+                        <!-- Tabla de agendas -->
+                        <q-card flat bordered class="q-mb-md">
+                            <q-table title="Legalizaciones del contratista" :rows="agendasUsuarioFiltradas"
+                                :columns="columnsLegalizacion" row-key="_id" flat :rows-per-page-options="[10, 20, 50]">
+                                <template v-slot:top-title>
+                                    <div class="row items-center q-gutter-sm">
+                                        <q-icon name="list_alt" color="primary" />
+                                        <span class="text-subtitle1 text-weight-medium">Legalizaciones del Contratista</span>
+                                        <q-badge color="primary" rounded>{{ agendasUsuarioFiltradas.length }}</q-badge>
                                     </div>
-                                </q-td>
-                            </template>
+                                </template>
 
+                                <!-- Estado de radicación -->
+                                <template v-slot:body-cell-estadoRadicacion="props">
+                                    <q-td align="center">
+                                        <q-chip dense
+                                            :color="getLastRadication(props.row)?.status === 'RADICADO' ? 'green-7' : 'orange-7'"
+                                            text-color="white"
+                                            :icon="getLastRadication(props.row)?.status === 'RADICADO' ? 'check_circle' : 'hourglass_empty'"
+                                            size="sm">
+                                            {{ getLastRadication(props.row)?.status || 'NO RADICADO' }}
+                                        </q-chip>
+                                    </q-td>
+                                </template>
 
+                                <!-- Número de radicación -->
+                                <template v-slot:body-cell-numeroRadicacion="props">
+                                    <q-td align="center">
+                                        <div class="row items-center no-wrap q-gutter-xs justify-center">
 
-                            <!-- 🔹 VER DETALLE + IR A RADICAR -->
-                            <template v-slot:body-cell-ver="props">
-                                <q-td align="center">
-                                    <div class="row items-center no-wrap q-gutter-sm justify-center">
+                                            <span v-if="getLastRadication(props.row)?.radicationNumber"
+                                                class="text-weight-medium text-primary">
+                                                {{ getLastRadication(props.row).radicationNumber }}
+                                            </span>
+                                            <span v-else class="text-grey-5 text-caption text-italic">
+                                                Sin número
+                                            </span>
 
-                                        <!-- Botón ver detalle -->
-                                        <q-btn icon="description" size="sm" color="primary" flat round
-                                            @click="verDocumentos(props.row)">
-                                            <q-tooltip>Ver documentos del contratista</q-tooltip>
-                                        </q-btn>
+                                            <q-btn v-if="!getLastRadication(props.row)?.radicationNumber" size="xs" flat
+                                                round icon="add_circle" color="primary"
+                                                @click="abrirDialogRadicacion(props.row)">
+                                                <q-tooltip>Agregar número</q-tooltip>
+                                            </q-btn>
 
-                                        <q-btn icon="download" size="sm" color="green" flat round
-                                            @click="descargarPdfLimpio(props.row)" />
+                                            <q-btn v-else size="xs" flat round icon="edit" color="grey-6"
+                                                @click="abrirDialogRadicacion(props.row)">
+                                                <q-tooltip>Editar número</q-tooltip>
+                                            </q-btn>
 
+                                        </div>
+                                    </q-td>
+                                </template>
 
-                                        <!-- Botón ir a radicar -->
-                                        <q-btn icon="search" size="sm" color="secondary" flat round
-                                            @click="consultarARadicar(props.row)">
-                                            <q-tooltip>Consultar Radicación</q-tooltip>
-                                        </q-btn>
+                                <!-- Acciones -->
+                                <template v-slot:body-cell-ver="props">
+                                    <q-td align="center">
+                                        <div class="row justify-center items-center q-gutter-xs">
 
-                                    </div>
-                                </q-td>
-                            </template>
-                        </q-table>
+                                            <q-btn icon="description" size="sm" color="primary" flat round
+                                                @click="verDocumentos(props.row)">
+                                                <q-tooltip>Ver documentos</q-tooltip>
+                                            </q-btn>
 
+                                            <q-btn icon="download" size="sm" color="green-7" flat round
+                                                @click="descargarPdfLimpio(props.row)">
+                                                <q-tooltip>Descargar PDF</q-tooltip>
+                                            </q-btn>
 
-                        <!-- 📄 DETALLE LEGALIZACIÓN -->
-                        <div v-if="agendaSeleccionada && agendaSeleccionada._id" class="q-mt-md">
+                                            <q-btn icon="search" size="sm" color="secondary" flat round
+                                                @click="consultarARadicar(props.row)">
+                                                <q-tooltip>Consultar Radicación</q-tooltip>
+                                            </q-btn>
+
+                                        </div>
+                                    </q-td>
+                                </template>
+
+                            </q-table>
+                        </q-card>
+
+                        <!-- Detalle de agenda seleccionada -->
+                        <div v-if="agendaSeleccionada && agendaSeleccionada._id">
                             <q-separator class="q-my-md" />
-                            <div class="text-h6 q-mb-md">Detalle de la Agenda</div>
 
-                            <!-- ⚠️ ALERTA DE FIRMAS FALTANTES -->
+                            <div class="row items-center q-mb-md q-gutter-sm">
+                                <q-icon name="preview" color="primary" />
+                                <span class="text-subtitle1 text-weight-medium text-grey-8">Detalle de la Legalizacion</span>
+                            </div>
+
+                            <!-- Alerta firmas faltantes -->
                             <q-banner
                                 v-if="!previewError && (!agendaSeleccionada.signature?.contractor || !agendaSeleccionada.signature?.supervisor)"
-                                class="bg-orange-2 text-orange-9 q-mb-md" rounded>
+                                class="bg-orange-1 text-orange-9 q-mb-md rounded-borders" rounded>
                                 <template v-slot:avatar>
-                                    <q-icon name="warning" color="orange" size="md" />
+                                    <q-icon name="warning" color="orange-7" size="md" />
                                 </template>
                                 <div class="text-subtitle2 text-weight-medium">Firmas pendientes</div>
-                                <div class="text-body2">
-                                    <span v-if="!agendaSeleccionada.signature?.contractor">• Falta firma del
-                                        contratista</span>
-                                    <br
-                                        v-if="!agendaSeleccionada.signature?.contractor && !agendaSeleccionada.signature?.supervisor">
-                                    <span v-if="!agendaSeleccionada.signature?.supervisor">• Falta firma del
-                                        supervisor</span>
+                                <div class="text-body2 q-mt-xs">
+                                    <div v-if="!agendaSeleccionada.signature?.contractor">• Falta firma del contratista
+                                    </div>
+                                    <div v-if="!agendaSeleccionada.signature?.supervisor">• Falta firma del supervisor
+                                    </div>
                                 </div>
                             </q-banner>
 
-                            <!-- ✅ ALERTA DE FIRMAS COMPLETAS -->
-                            <q-banner v-else-if="!previewError" class="bg-green-2 text-green-9 q-mb-md" rounded>
+                            <!-- Alerta firmas completas -->
+                            <q-banner v-else-if="!previewError" class="bg-green-1 text-green-9 q-mb-md rounded-borders"
+                                rounded>
                                 <template v-slot:avatar>
-                                    <q-icon name="check_circle" color="green" size="md" />
+                                    <q-icon name="check_circle" color="green-7" size="md" />
                                 </template>
                                 <div class="text-subtitle2 text-weight-medium">Firmas completas</div>
-                                <div class="text-body2">
-                                    Todas las firmas requeridas están presentes
-                                </div>
+                                <div class="text-body2 q-mt-xs">Todas las firmas requeridas están presentes.</div>
                             </q-banner>
 
-                            <!-- Componente Preview con manejo de errores -->
-                            <div v-if="previewError" class="q-pa-md bg-red-2 text-red-9 rounded-borders">
-                                <q-icon name="error" size="md" class="q-mr-sm" />
-                                Error al cargar el detalle de la agenda. Por favor, intente nuevamente.
+                            <!-- Error preview -->
+                            <div v-if="previewError"
+                                class="q-pa-md bg-red-1 text-red-9 rounded-borders row items-center q-gutter-sm">
+                                <q-icon name="error" size="md" color="red-7" />
+                                <span>Error al cargar el detalle. Por favor, intente nuevamente.</span>
                             </div>
                             <LegalizationDetail v-else :key="agendaSeleccionada._id" :row="agendaSeleccionada"
                                 @vue:error="previewError = true" />
 
                         </div>
 
-                    </q-card-section>
+                    </div>
 
                 </q-card>
             </q-dialog>
 
+            <!-- ═══ DIALOG: AGREGAR / EDITAR NÚMERO DE RADICACIÓN ═══ -->
             <q-dialog v-model="dialogRadicacion">
-                <q-card style="width:400px">
+                <q-card style="width: 420px; max-width: 95vw">
 
-                    <q-bar>
-                        <div class="text-h6">Radicación</div>
-                        <q-space />
-                        <q-btn dense flat icon="close" v-close-popup />
-                    </q-bar>
+                    <q-toolbar class="bg-primary text-white">
+                        <q-icon name="tag" size="sm" class="q-mr-sm" />
+                        <q-toolbar-title>Número de Radicación</q-toolbar-title>
+                        <q-btn dense flat round icon="close" v-close-popup />
+                    </q-toolbar>
 
-                    <q-card-section>
-                        <q-input v-model="numeroRadicacion" label="Número de radicación" outlined />
+                    <q-card-section class="q-pt-md">
+                        <q-input v-model="numeroRadicacion" label="Ingrese el número de radicación" outlined autofocus>
+                            <template v-slot:prepend>
+                                <q-icon name="pin" color="grey-6" />
+                            </template>
+                        </q-input>
                     </q-card-section>
 
-                    <q-card-actions align="right">
-                        <q-btn flat label="Cancelar" v-close-popup />
-                        <q-btn color="primary" label="Guardar" @click="guardarRadicacion" />
+                    <q-separator />
+
+                    <q-card-actions align="right" class="q-pa-md">
+                        <q-btn flat label="Cancelar" color="grey-7" v-close-popup />
+                        <q-btn unelevated color="primary" label="Guardar" icon="save" @click="guardarRadicacion" />
                     </q-card-actions>
 
                 </q-card>
             </q-dialog>
 
-            <q-dialog v-model="dialogDocs">
-                <q-card style="width: 95vw; max-width: 1100px">
+            <!-- ═══ DIALOG: DOCUMENTOS DEL CONTRATISTA ═══ -->
+            <q-dialog v-model="dialogDocs" transition-show="slide-up" transition-hide="slide-down">
+                <q-card style="width: 92vw; max-width: 1100px; max-height: 90vh">
 
-                    <q-bar>
-                        <div class="text-h6">
-                            Documentos del contratista
-                        </div>
-                        <q-space />
-                        <q-btn dense flat icon="close" v-close-popup />
-                    </q-bar>
+                    <q-toolbar class="bg-primary text-white">
+                        <q-icon name="folder_open" size="sm" class="q-mr-sm" />
+                        <q-toolbar-title>Documentos del Contratista</q-toolbar-title>
+                        <q-btn dense flat round icon="close" v-close-popup />
+                    </q-toolbar>
 
-                    <q-card-section>
+                    <q-card-section class="q-pa-md">
 
-                        <div v-if="!pdfUrl" class="text-center text-grey">
-                            No hay documentos adjuntos
-                        </div>
-
-                        <q-card-section>
-
-                            <!-- FORMATO LEGALIZACIÓN -->
-                            <div v-if="agendaDocs">
-                                <LegalizationDetail :row="agendaDocs" />
+                        <div v-if="!pdfUrl && !archivosDocs.length && !agendaDocs" class="flex flex-center q-pa-xl">
+                            <div class="text-center text-grey-5">
+                                <q-icon name="folder_off" size="4rem" />
+                                <div class="q-mt-sm text-subtitle1">No hay documentos adjuntos</div>
                             </div>
+                        </div>
 
-                            <!-- DOCUMENTOS PDF -->
-                            <div v-for="(doc, index) in archivosDocs" :key="index" class="q-mt-md">
+                        <div v-if="agendaDocs" class="q-mb-md">
+                            <LegalizationDetail :row="agendaDocs" />
+                        </div>
 
+                        <div v-for="(doc, index) in archivosDocs" :key="index" class="q-mt-md">
+                            <q-card flat bordered>
+                                <q-card-section class="q-pa-sm bg-grey-2">
+                                    <div class="row items-center q-gutter-xs">
+                                        <q-icon name="picture_as_pdf" color="red-7" />
+                                        <span class="text-caption text-grey-7">Documento {{ index + 1 }}</span>
+                                    </div>
+                                </q-card-section>
                                 <iframe :src="doc.url" style="width:100%; height:600px; border:none;" />
+                            </q-card>
+                        </div>
 
-                            </div>
-
-                        </q-card-section>
                     </q-card-section>
 
                 </q-card>
             </q-dialog>
 
-
-
         </q-page>
     </template>
 
 <script setup>
-import { ref, computed, onMounted, onErrorCaptured, nextTick } from 'vue'
+import { ref, computed, onMounted, onErrorCaptured } from 'vue'
 import { useScheduleStore } from '../../../stores/schedule'
 import LegalizationDetail from '../administrator/Preview.vue'
 import { PDFDocument } from 'pdf-lib'
@@ -320,7 +375,6 @@ const agendaSeleccionada = ref(null)
 const filterTripOrderDialog = ref('')
 const previewError = ref(false)
 
-const previewKey = ref(0)
 const descargandoTodas = ref(false)
 const descargandoUsuario = ref(null)
 
@@ -344,31 +398,31 @@ const dialogDocs = ref(false)
 
 const verDocumentos = (agenda) => {
 
-  agendaDocs.value = agenda
+    agendaDocs.value = agenda
 
-  const docs = agenda.legalization?.documents
+    const docs = agenda.legalization?.documents
 
-  const archivos = [
-    ...(docs?.autorizacionPago || []),
-    ...(docs?.compromisoPresupuestal || []),
-    ...(docs?.asistenciaFormacion || []),
-    ...(docs?.tiquetes || []),
-    ...(docs?.interveredal || [])
-  ]
+    const archivos = [
+        ...(docs?.autorizacionPago || []),
+        ...(docs?.compromisoPresupuestal || []),
+        ...(docs?.asistenciaFormacion || []),
+        ...(docs?.tiquetes || []),
+        ...(docs?.interveredal || [])
+    ]
 
-  archivosDocs.value = archivos.map(doc => {
+    archivosDocs.value = archivos.map(doc => {
 
-    const url = doc.url.startsWith('http')
-      ? doc.url
-      : `${import.meta.env.VITE_API_URL}${doc.url}`
+        const url = doc.url.startsWith('http')
+            ? doc.url
+            : `${import.meta.env.VITE_API_URL}${doc.url}`
 
-    return {
-      ...doc,
-      url
-    }
-  })
+        return {
+            ...doc,
+            url
+        }
+    })
 
-  dialogDocs.value = true
+    dialogDocs.value = true
 }
 
 
@@ -443,9 +497,9 @@ const loadSchedules = async () => {
             schedules = data.data
         }
 
-        // 🔹 SOLO agendas firmadas por supervisor
+        // 🔹 Agendas desde "Legalización firmada por Supervisor" (index >= 6)
         rows.value = schedules.filter(
-            s => s.status?.index === 6
+            s => s.status?.index >= 6
         )
 
         console.log('📊 Total agendas cargadas:', rows.value.length)
@@ -643,43 +697,45 @@ const guardarRadicacion = async () => {
     if (!numeroRadicacion.value) return
 
     try {
-        const { status, data } = await scheduleStore.addRadication(
-            agendaRadicacion.value._id,
-            {
-                status: 'RADICADO',
-                radicationNumber: numeroRadicacion.value
-            }
-        )
+        const lastRadication = getLastRadication(agendaRadicacion.value)
+        const esEdicion = !!lastRadication?._id
+
+        const { status } = esEdicion
+            ? await scheduleStore.updateRadication(
+                agendaRadicacion.value._id,
+                lastRadication._id,
+                { radicationNumber: numeroRadicacion.value }
+              )
+            : await scheduleStore.addRadication(
+                agendaRadicacion.value._id,
+                { radicationNumber: numeroRadicacion.value }
+              )
 
         if (status === 200 || status === 201) {
-            // Actualizar la agenda en el arreglo local
             const agendaIndex = agendasUsuario.value.findIndex(
                 a => a._id === agendaRadicacion.value._id
             )
 
             if (agendaIndex !== -1) {
-                // Crear nueva radicación
-                const newRadication = {
-                    status: 'RADICADO',
-                    radicationNumber: numeroRadicacion.value,
-                    createdAt: new Date().toISOString()
-                }
-
-                // Si no existe el array, crearlo
                 if (!agendasUsuario.value[agendaIndex].radications) {
                     agendasUsuario.value[agendaIndex].radications = []
                 }
 
-                // Agregar la nueva radicación
-                agendasUsuario.value[agendaIndex].radications.push(newRadication)
+                if (esEdicion) {
+                    // Actualizar la última radicación en lugar de agregar una nueva
+                    const idx = agendasUsuario.value[agendaIndex].radications.length - 1
+                    agendasUsuario.value[agendaIndex].radications[idx].radicationNumber = numeroRadicacion.value
+                } else {
+                    agendasUsuario.value[agendaIndex].radications.push({
+                        radicationNumber: numeroRadicacion.value,
+                        createdAt: new Date().toISOString()
+                    })
+                }
             }
 
-            // Cerrar dialog y recargar datos completos
             dialogRadicacion.value = false
             numeroRadicacion.value = ''
             agendaRadicacion.value = null
-
-            await loadSchedules()
         }
     } catch (error) {
         console.error('❌ Error guardando radicación:', error)

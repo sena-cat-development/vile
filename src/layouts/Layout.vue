@@ -23,7 +23,9 @@
 
                 <!-- Perfil de usuario -->
                 <div class="drawer-profile">
-                    <q-img src="../assets/sena-icono.png" class="sena-logo" />
+                    <q-avatar size="64px" class="user-avatar">
+                        {{ userInitials }}
+                    </q-avatar>
                     <div class="user-name">{{ user.name }}</div>
                     <div class="role-label">{{ roleLabel }}</div>
                 </div>
@@ -136,13 +138,21 @@ const roleLabel = computed(() => {
 })
 
 onBeforeMount(async () => {
-    // Verificar que el usuario exista
     if (!user.value || !user.value.role) {
         router.replace('/')
         return
     }
 
-    const { role } = user.value
+    // ✅ Sincronizar userStore con lo que ya está en localStorage
+    if (!userStore.user) {
+        userStore.user = user.value
+    }
+
+    const userId = user.value._id || user.value.id
+    await notificationStore.init(userId)  // ✅ await
+
+     const { role } = user.value  // ✅ extraer role DESPUÉS de los checks
+
 
     try {
         if (role.data == 'user') {
@@ -153,41 +163,41 @@ onBeforeMount(async () => {
 
             if (data.staffType.data == 'contractor') {
                 items.value = [
-                    { label: 'Home', link: '/layout/home', icon: 'house' },
-                    { label: 'Perfil', link: '/layout/perfil', icon: 'person' },
-                    { label: 'Crear Agenda', link: '/layout/agenda/contratista/crear', icon: 'fa-solid fa-calendar' },
+                    { label: 'Home', link: '/layout/home', icon: 'home' },
+                    { label: 'Perfil', link: '/layout/perfil', icon: 'manage_accounts' },
+                    { label: 'Crear Agenda', link: '/layout/agenda/contratista/crear', icon: 'fa-solid fa-calendar-plus' },
                     { label: 'Crear Legalización', link: '/layout/agenda/legalizacion', icon: 'fa-solid fa-signature' },
-                    { label: 'Mis Agendas', link: '/layout/agenda/officialsschedules', icon: 'fa-solid fa-clipboard' },
-                    { label: 'Mis Legalizaciones', link: '/layout/agenda/legalizationofficials', icon: 'fa-solid fa-clipboard' }
+                    { label: 'Mis Agendas', link: '/layout/agenda/officialsschedules', icon: 'fa-solid fa-calendar-days' },
+                    { label: 'Mis Legalizaciones', link: '/layout/agenda/legalizationofficials', icon: 'fa-solid fa-file-signature' }
                 ]
             } else {
                 items.value = [
-                    { label: 'Home', link: '/layout/home', icon: 'house' },
-                    { label: 'Perfil', link: '/layout/perfil', icon: 'person' },
-                    { label: 'Crear Agenda', link: '/layout/agenda/funcionario/crear', icon: 'fa-solid fa-calendar' },
+                    { label: 'Home', link: '/layout/home', icon: 'home' },
+                    { label: 'Perfil', link: '/layout/perfil', icon: 'manage_accounts' },
+                    { label: 'Crear Agenda', link: '/layout/agenda/funcionario/crear', icon: 'fa-solid fa-calendar-plus' },
                     { label: 'Crear Legalización', link: '/layout/agenda/legalizacion', icon: 'fa-solid fa-signature' },
-                    { label: 'Histórico', link: '/layout/agenda/historico', icon: 'fa-solid fa-clipboard' }
+                    { label: 'Histórico', link: '/layout/agenda/historico', icon: 'fa-solid fa-clock-rotate-left' }
                 ]
             }
         } else if (role.data == 'supervisor') {
             items.value = [
-                { label: 'Home', link: '/layout/home', icon: 'house' },
-                { label: 'Perfil', link: '/layout/perfil', icon: 'person' },
+                { label: 'Home', link: '/layout/home', icon: 'home' },
+                { label: 'Perfil', link: '/layout/perfil', icon: 'manage_accounts' },
                 { label: 'Solicitudes', link: '/layout/agenda/solicitudes', icon: 'fa-solid fa-person-circle-question' },
                 { label: 'Solicitudes Legalización Contratista', link: '/layout/agenda/legalizacion', icon: 'fa-solid fa-file-contract' },
-                { label: 'Crear Agenda', link: '/layout/agenda/funcionario/crear', icon: 'fa-solid fa-calendar' },
+                { label: 'Crear Agenda', link: '/layout/agenda/funcionario/crear', icon: 'fa-solid fa-calendar-plus' },
                 { label: 'Crear Legalización', link: '/layout/agenda/funcionario/legalizacion', index: true, icon: 'fa-solid fa-signature' },
                 { label: 'Mis Agendas', link: '/layout/agenda/officialsschedules', icon: 'fa-solid fa-calendar-check' },
                 { label: 'Mis Legalizaciones', link: '/layout/agenda/legalizationofficials', icon: 'fa-solid fa-file-signature' },
-                { label: 'Radicaciones', link: '/layout/agenda/rooting', icon: 'fa-solid fa-clipboard' },
-                { label: 'Agendas firmadas', link: '/layout/agenda/firmadas', icon: 'fa-solid fa-clipboard' },
-                { label: 'Presupuesto', link: '/#/layout/agenda/dashboard', icon: 'fa-solid fa-clipboard' }
+                { label: 'Radicaciones', link: '/layout/agenda/rooting', icon: 'fa-solid fa-inbox' },
+                { label: 'Agendas firmadas', link: '/layout/agenda/firmadas', icon: 'fa-solid fa-calendar-check' },
+                { label: 'Presupuesto', link: '/#/layout/agenda/dashboard', icon: 'fa-solid fa-coins' }
             ]
         } else if (role.data == 'administrator') {
             items.value = [
-                { label: 'Home', link: '/layout/home', icon: 'house' },
-                { label: 'Perfil', link: '/layout/perfil', icon: 'person' },
-                { label: 'Usuarios', link: '/layout/usuario', icon: 'people' },
+                { label: 'Home', link: '/layout/home', icon: 'home' },
+                { label: 'Perfil', link: '/layout/perfil', icon: 'manage_accounts' },
+                { label: 'Usuarios', link: '/layout/usuario', icon: 'group' },
             ]
         }
     } catch (error) {
@@ -231,29 +241,37 @@ function goLogin() {
 </script>
 
 <style scoped>
+/* ── Drawer layout ── */
+:deep(.q-drawer__content) {
+    display: flex;
+    flex-direction: column;
+}
+
 /* ── Perfil ── */
 .drawer-profile {
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 24px 16px 20px;
-    background: #ffffff;
+    background: #f9fbe7;
     border-bottom: 1px solid #e0e0e0;
 }
 
-.sena-logo {
-    width: 70px;
-    height: 70px;
-    margin-bottom: 14px;
+.user-avatar {
+    background: #2e7d32;
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.35);
 }
-
 
 .user-name {
     font-size: 14px;
     font-weight: 600;
     text-align: center;
     color: #212121;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     line-height: 1.3;
 }
 
@@ -271,6 +289,7 @@ function goLogin() {
 /* ── Menú ── */
 .menu-list {
     flex: 1;
+    overflow-y: auto;
 }
 
 .menu-item {
@@ -278,7 +297,7 @@ function goLogin() {
     margin: 2px 8px;
     color: #37474f;
     font-weight: 500;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     min-height: 44px;
 }
 
@@ -293,9 +312,14 @@ function goLogin() {
     font-weight: 600;
 }
 
-/* ── Footer ── */
+.menu-item-active :deep(.q-icon) {
+    color: #2e7d32;
+}
+
+/* ── Footer (sticky al fondo) ── */
 .drawer-footer {
     padding-bottom: 8px;
+    margin-top: auto;
 }
 
 .logout-item {
@@ -304,6 +328,7 @@ function goLogin() {
     color: #c62828;
     font-weight: 500;
     min-height: 44px;
+    transition: background-color 0.2s ease;
 }
 
 .logout-item:hover {

@@ -1,14 +1,17 @@
 <template>
-  <div>
+  <div class="flex flex-center q-pa-md">
 
-  <!-- ENCABEZADO (separado del cuerpo) -->
-  <div class="col-6" style="border: 2px solid black; margin-bottom: 20px;">
+  <!-- CONTENEDOR CENTRADO CON ENCABEZADO + CUERPO -->
+  <div id="element" style="width: 900px; max-width: 100%; padding: 32px;">
+
+  <!-- ENCABEZADO -->
+  <div style="border: 2px solid black; border-bottom: none;">
     <div class="row">
       <div class="col-2 justify-center flex q-py-xs" style="border-right: 1px solid black">
-        <q-img src="../../../assets/siga sena.png" fit="contain" style="height: 70px; width: 100px;" />
+        <img :src="sigaSenaLogo" style="height: 70px; width: 100px; object-fit: contain;" crossorigin="anonymous" />
       </div>
-      <div class="col-10">
-        <p class="q-my-none q-pt-lg text-center" style="font-size: 18px;">
+      <div class="col-10 flex flex-center">
+        <p class="q-my-none text-center" style="font-size: 18px;">
           <strong>AGENDA DE LABORES PARA COMISIÓN SERVIDORES PÚBLICOS</strong>
         </p>
       </div>
@@ -16,7 +19,7 @@
   </div>
 
   <!-- CUERPO DEL FORMULARIO -->
-  <div class="col-6" style="border: 2px solid black;" id="element">
+  <div style="border: 2px solid black;">
 
     <!-- SECCIÓN: DATOS DE LA AGENDA DE COMISIÓN -->
     <div class="row border-bottom" style="background-color: rgb(217, 217, 217);">
@@ -342,22 +345,20 @@
 
   </div>
 
-  <!-- CÓDIGO DE VERSIÓN (fuera del cuerpo del formulario) -->
-  <div class="col-12" />
-  <div class="col-6">
-    <div class="row justify-end">
-      <p>GTH-F-188 V01</p>
-    </div>
+  <!-- CÓDIGO DE VERSIÓN -->
+  <div class="row justify-end q-mt-xs">
+    <p class="q-my-none">GTH-F-188 V01</p>
   </div>
-  <div class="col-12" />
 
-  </div>
+  </div><!-- fin #element -->
+  </div><!-- fin flex-center -->
 </template>
 
 <script setup>
 import { ref, onBeforeMount, watch } from 'vue'
 import { useUserStore } from '../../../stores/user.js'
 import { date, useQuasar } from 'quasar'
+import sigaSenaLogo from '../../../assets/siga sena.png'
 
 const props = defineProps({
   row: {
@@ -629,6 +630,12 @@ onBeforeMount(async () => {
     }
     // =======================================================
     
+    // 📋 Firma: siempre se carga independiente del estado
+    signature.value = props.row.signature || {
+        publicWorker: null,
+        paymaster: null
+    }
+
     // 📋 Datos adicionales según estado
     if ([2, 4, 6].includes(props.row.status?.index)) {
         conclusions.value = props.row.conclusions || []
@@ -639,11 +646,6 @@ onBeforeMount(async () => {
         legalization.value = props.row.legalization || {
             createdAt: null,
             signature: { publicWorker: null }
-        }
-    } else {
-        signature.value = props.row.signature || {
-            publicWorker: null,
-            paymaster: null
         }
     }
     

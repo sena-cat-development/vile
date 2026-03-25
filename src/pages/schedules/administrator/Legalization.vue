@@ -149,8 +149,18 @@
 
             <div v-if="showPreview">
                 <div id="invoice" ref="invoice" style="margin: 0 auto;">
-                    <PreviewL v-if="!showOther && (user?.role?.data === 'user' || user?.role?.data === 'supervisor')" :row="row" />
-                    <Preview v-if="!showOther && user?.role?.data !== 'user' && user?.role?.data !== 'supervisor'" :row="row" />
+                    <!-- Contratista -->
+                    <PreviewContratista v-if="!showOther && (
+                        (user?.role?.data === 'user' && currentUser?.staffType?.data === 'contractor') ||
+                        (user?.role?.data === 'supervisor' && row?.typeSchedule === 'contractor')
+                    )" :row="row" />
+
+                    <!-- Funcionario público -->
+                    <PreviewFuncionario v-if="!showOther && !(
+                        (user?.role?.data === 'user' && currentUser?.staffType?.data === 'contractor') ||
+                        (user?.role?.data === 'supervisor' && row?.typeSchedule === 'contractor')
+                    )" :row="row" />
+
                     <OtherPreview v-if="showOther" :row="row" />
                 </div>
             </div>
@@ -256,25 +266,26 @@
                                                 <q-input v-model="element.name" filled stack-label label="Nombre" />
                                             </div>
                                             <div class="col-12 q-px-sm">
-                                                <q-file :model-value="null" multiple filled stack-label
-                                                    label="Archivos" accept="image/*"
+                                                <q-file :model-value="null" multiple filled stack-label label="Archivos"
+                                                    accept="image/*"
                                                     @update:model-value="files => addFiles(index, files)">
                                                     <template v-slot:default>
                                                         <div v-if="element.items && element.items.length > 0"
                                                             class="row q-gutter-xs justify-start" @click.stop>
-                                                            <q-chip
-                                                                v-for="(file, fi) in element.items"
-                                                                :key="fi"
-                                                                dense removable icon="image"
-                                                                color="blue-1" text-color="primary"
-                                                                @remove="element.items.splice(fi, 1)"
-                                                            >
-                                                                {{ file?.name ?? (file?.url ? file.url.split('/').pop() : 'imagen') }}
+                                                            <q-chip v-for="(file, fi) in element.items" :key="fi" dense
+                                                                removable icon="image" color="blue-1"
+                                                                text-color="primary"
+                                                                @remove="element.items.splice(fi, 1)">
+                                                                {{ file?.name ?? (file?.url ? file.url.split('/').pop()
+                                                                    : 'imagen') }}
                                                             </q-chip>
                                                         </div>
-                                                        <div v-else class="column items-center justify-center text-grey-4 full-width q-py-sm" style="pointer-events: none;">
+                                                        <div v-else
+                                                            class="column items-center justify-center text-grey-4 full-width q-py-sm"
+                                                            style="pointer-events: none;">
                                                             <q-icon name="add_photo_alternate" size="30px" />
-                                                            <span style="font-size: 11px;" class="q-mt-xs">Haz clic para agregar imágenes</span>
+                                                            <span style="font-size: 11px;" class="q-mt-xs">Haz clic para
+                                                                agregar imágenes</span>
                                                         </div>
                                                     </template>
                                                 </q-file>
@@ -332,7 +343,8 @@
                             </div>
 
                             <!-- 2. Compromiso Presupuestal -->
-                            <div v-if="currentUser.staffType && currentUser.staffType.data == 'contractor'" class="col-12 q-mb-md">
+                            <div v-if="currentUser.staffType && currentUser.staffType.data == 'contractor'"
+                                class="col-12 q-mb-md">
                                 <div class="row items-center q-pa-sm rounded-borders"
                                     style="background: #f5f5f5; border-left: 4px solid #19D27F;">
                                     <div class="col-12 q-mb-sm">
@@ -361,7 +373,8 @@
                             </div>
 
                             <!-- 3. Asistencia de Formación -->
-                            <div v-if="currentUser.staffType && currentUser.staffType.data == 'contractor'" class="col-12 q-mb-md">
+                            <div v-if="currentUser.staffType && currentUser.staffType.data == 'contractor'"
+                                class="col-12 q-mb-md">
                                 <div class="row items-center q-pa-sm rounded-borders"
                                     style="background: #f5f5f5; border-left: 4px solid #19D27F;">
                                     <div class="col-12 q-mb-sm">
@@ -420,8 +433,7 @@
                                     <div v-if="soportes.tiquetes.length > 0" class="col-12 q-mt-xs row q-gutter-xs">
                                         <q-chip v-for="(file, i) in soportes.tiquetes" :key="i" dense removable
                                             @remove="soportes.tiquetes = soportes.tiquetes.filter((_, idx) => idx !== i)"
-                                            icon="picture_as_pdf"
-                                            color="blue-1" text-color="primary">
+                                            icon="picture_as_pdf" color="blue-1" text-color="primary">
                                             {{ file.name }}
                                         </q-chip>
                                     </div>
@@ -530,20 +542,20 @@
                         <div class="col-12 q-mt-sm">
                             <div class="row justify-center">
                                 <div class="col-10" style="background-color: whitesmoke;">
-                                    <p class="q-my-none q-pl-md q-pt-sm" style="font-size: 12px; color: grey;">Firma:</p>
+                                    <p class="q-my-none q-pl-md q-pt-sm" style="font-size: 12px; color: grey;">Firma:
+                                    </p>
                                 </div>
                                 <div class="col-10 q-pl-sm q-py-sm" style="background-color: whitesmoke;">
                                     <q-img v-if="sign.contractor || sign.publicWorker" fit="contain"
                                         :src="currentUser.staffType && currentUser.staffType.data == 'contractor' ? sign.contractor : sign.publicWorker"
                                         style="width: 200px; height: 80px;" />
-                                    <p v-else class="q-my-none q-pl-xs" style="font-size: 12px; color: #aaa;">Sin firma cargada</p>
+                                    <p v-else class="q-my-none q-pl-xs" style="font-size: 12px; color: #aaa;">Sin firma
+                                        cargada</p>
                                 </div>
-                                <div v-if="currentUser.staffType?.data === 'contractor'" class="col-10 q-pb-sm q-pr-sm" style="background-color: whitesmoke;">
-                                    <q-file
-                                        :model-value="signFile.contractor"
-                                        filled dense clearable accept="image/*"
-                                        label="Seleccionar imagen de firma"
-                                        :disable="sign.contractor !== null"
+                                <div v-if="currentUser.staffType?.data === 'contractor'" class="col-10 q-pb-sm q-pr-sm"
+                                    style="background-color: whitesmoke;">
+                                    <q-file :model-value="signFile.contractor" filled dense clearable accept="image/*"
+                                        label="Seleccionar imagen de firma" :disable="sign.contractor !== null"
                                         @update:model-value="onSignFileSelected">
                                         <template v-slot:prepend>
                                             <q-icon name="fa-solid fa-signature" />
@@ -692,9 +704,8 @@ import { useScheduleStore } from '../../../stores/schedule.js'
 import { useUserStore } from '../../../stores/user.js'
 import html2pdf from 'html2pdf.js'
 
-import Preview from './Preview.vue'
-import OtherPreview from '../public/Preview.vue'
-import PreviewL from '../public/previewL.vue'
+import PreviewContratista from './Preview.vue'
+import PreviewFuncionario from '../public/previewL.vue'
 
 
 const allDocuments = computed(() => {
@@ -936,6 +947,8 @@ const collectionsOriginal = ref([])
 
 
 function getPreview() {
+    console.log('staffType:', currentUser.value?.staffType?.data)
+    console.log('role:', currentUser.value?.role?.data)
 
     // ✅ Siempre guardar los Files originales ANTES de convertir a blob URLs
     collectionsOriginal.value = collections.value.map(col => ({
@@ -1035,7 +1048,7 @@ const previewTitle = ref('')
 
 import axios from 'axios'
 
-    const BASE_URL = import.meta.env.VITE_API_URL
+const BASE_URL = import.meta.env.VITE_API_URL
 
 const abrirPreview = async (file) => {
     const url = getFileUrl(file)
@@ -1184,9 +1197,9 @@ async function postLegalization() {
     if (soportes.value.interveredal instanceof File)
         formData.append('interveredal', soportes.value.interveredal)
 
-    ;(soportes.value.tiquetes || []).forEach((file) => {
-        if (file instanceof File) formData.append('tiquetes', file)
-    })
+            ; (soportes.value.tiquetes || []).forEach((file) => {
+                if (file instanceof File) formData.append('tiquetes', file)
+            })
 
     if (signFile.value.contractor instanceof File)
         formData.append('signatureContractor', signFile.value.contractor)
@@ -1246,11 +1259,13 @@ async function postLegalization() {
                 ? 'Legalización firmada por Contratista'
                 : 'Agenda en Proceso de Legalización',
             index: sign.value.contractor !== null ? 5 : 4,
+            number: 2,
             justification: null
         }
         : {
-            data: 'Legalización firmada por Funcionario',
+            data: 'Legalización firmada por Supervisor',
             index: 6,
+            number: 2,
             justification: null
         }
 

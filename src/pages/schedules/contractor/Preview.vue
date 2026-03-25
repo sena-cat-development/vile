@@ -503,7 +503,7 @@
             </div>
             <div style="flex: 1; padding: 3px 6px; display: flex; align-items: center; justify-content: center;">
               <span v-if="returnRoute && returnRoute.length">{{returnRoute.map(r => r.label || r.data).join(' - ')
-              }}</span>
+                }}</span>
               <span v-else>-</span>
             </div>
           </div>
@@ -580,7 +580,7 @@
 
           <q-img v-if="sign.supervisor" fit="contain" :src="getFullUrl(sign.supervisor)"
             style="width:180px; max-height:90px; margin-top:6px;" />
-    
+
         </div>
 
         <div style="margin-top:auto; border-top:1px solid black; padding:3px 6px;">
@@ -602,7 +602,7 @@
             style="width:180px; max-height:90px; margin-top:6px;" />
         </div>
 
-        <div style="border-top:1px solid black; padding:3px 6px;">
+        <div>
           <!-- vacío -->
         </div>
       </div>

@@ -221,6 +221,24 @@ async postLegalization(formData, id) {
       }
     },
 
+    async updateRadication(scheduleId, radicationId, payload) {
+      try {
+        const { data, status } = await instance({
+          method: 'put',
+          url: `/schedule/${scheduleId}/radication/${radicationId}`,
+          data: payload
+        })
+        return { data, status }
+
+      } catch (error) {
+        console.error('❌ Error updateRadication:', error)
+        return {
+          data: null,
+          status: error.response?.status || 500
+        }
+      }
+    },
+
     async openDocument(publicId) {
       const response = await instance.get(
         `/schedule/download/${publicId}`,

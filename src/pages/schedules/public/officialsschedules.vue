@@ -1,13 +1,14 @@
 <template>
-    <div class="q-pa-md">
-        <h5 class="q-mb-md text-center">
-         Agendas De {{ titleUser }}
+    <div class="q-pa-lg">
+        <h5 class="q-mb-lg text-center text-weight-bold text-grey-8">
+            Agendas De {{ titleUser }}
         </h5>
+
         <q-table :rows="tableRows" :columns="columns" row-key="_id" flat bordered
-            no-data-label="No hay agendas firmadas">
+            no-data-label="No hay agendas firmadas" class="rounded-borders">
             <template #body-cell-status="props">
                 <q-td :props="props" class="text-center">
-                    <q-badge color="green" outline>
+                    <q-badge color="positive" outline>
                         {{ props.row.status.data }}
                     </q-badge>
                 </q-td>
@@ -16,31 +17,33 @@
             <template #body-cell-actions="props">
                 <q-td :props="props">
                     <div class="row justify-center q-gutter-sm">
-                        <q-btn icon="visibility" color="blue" dense @click="openPreview(props.row)">
+                        <q-btn icon="visibility" color="blue" round dense flat @click="openPreview(props.row)">
                             <q-tooltip>Ver agenda</q-tooltip>
                         </q-btn>
-
-                        <q-btn v-if="props.row.status?.index < 3 && props.row.typeSchedule !== 'contractor'"
-                            icon="verified" color="orange" dense @click="legalizeOne(props.row)">
-                            <q-tooltip>Legalizar agenda</q-tooltip>
+                        <q-btn icon="download" color="green" round dense flat @click="downloadOnePdf(props.row)">
+                            <q-tooltip>Descargar PDF</q-tooltip>
                         </q-btn>
-
                     </div>
                 </q-td>
             </template>
         </q-table>
 
         <!-- 🔵 MODAL PARA PREVISUALIZAR AGENDA -->
-        <q-dialog v-model="showPreview" maximized>
-            <q-card style="width: 900px; max-width: 95vw; height: 90vh;">
-                <q-card-section>
+        <q-dialog v-model="showPreview">
+            <q-card class="column no-wrap" style="width: 900px; max-width: 95vw; height: 85vh; background: #f5f5f5;">
+                <!-- Header fijo -->
+                <q-card-section class="row items-center bg-white" style="flex-shrink: 0;">
                     <div class="text-h6">Vista previa de la Agenda</div>
+                    <q-space />
+                    <q-btn flat round dense icon="close" v-close-popup />
                 </q-card-section>
-                <component :is="previewComponent" v-if="selectedSchedule" :row="selectedSchedule" />
-                <q-card-section></q-card-section>
-                <q-card-actions align="right">
-                    <q-btn flat label="Cerrar" color="primary" v-close-popup />
-                </q-card-actions>
+
+                <!-- Contenido scrollable -->
+                <div class="col" style="overflow-y: auto; padding: 16px;">
+                    <div style="background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 4px;">
+                        <component :is="previewComponent" v-if="selectedSchedule" :row="selectedSchedule" />
+                    </div>
+                </div>
             </q-card>
         </q-dialog>
 
@@ -63,7 +66,6 @@ import PreviewFuncionario from '../public/Preview.vue'
 import PreviewContratista from '../contractor/Preview.vue'
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
-import * as XLSX from 'xlsx'
 
 const $q = useQuasar()
 const scheduleStore = useScheduleStore()
@@ -199,45 +201,7 @@ const openPreview = (schedule) => {
     showPreview.value = true
 }
 
-const legalizeOne = async (item) => {
-    try {
-        await scheduleStore.putSchedule(
-            {
-                status: {
-                    index: 3,
-                    data: "Agenda legalizada por Administrador",
-                    number: 3
-                }
-            },
-            item._id
-        )
-        $q.notify({ type: 'positive', message: 'Agenda legalizada' })
-        loadSchedules()
-    } catch (err) {
-        $q.notify({ type: 'negative', message: 'Error al legalizar' })
-    }
-}
 
-const legalizeAll = async () => {
-    try {
-        for (const item of signedSchedules.value) {
-            await scheduleStore.putSchedule(
-                {
-                    status: {
-                        index: 3,
-                        data: "Agenda firmada por Supervisor",
-                        number: 3
-                    }
-                },
-                item._id
-            )
-        }
-        $q.notify({ type: 'positive', message: 'Todas las agendas fueron legalizadas' })
-        loadSchedules()
-    } catch (err) {
-        $q.notify({ type: 'negative', message: 'Error al legalizar agendas' })
-    }
-}
 
 const downloadOnePdf = async (item) => {
     try {
@@ -273,32 +237,40 @@ const downloadOnePdf = async (item) => {
 
         console.log('📄 Creando PDF...')
         const imgData = canvas.toDataURL('image/png')
-        const pdf = new jsPDF('p', 'mm', 'a4')
+        const pdf = new jsPDF('p', 'mm', 'letter')
 
         const pageWidth = pdf.internal.pageSize.getWidth()
         const pageHeight = pdf.internal.pageSize.getHeight()
 
-        // Calcular dimensiones de la imagen
-        const imgWidth = pageWidth
-        const imgHeight = (canvas.height * pageWidth) / canvas.width
+        // Márgenes en mm
+        const margin = 15
+        const maxWidth = pageWidth - margin * 2
+        const maxHeight = pageHeight - margin * 2
 
-        // Si la imagen es más alta que una página, dividirla en múltiples páginas
-        let heightLeft = imgHeight
-        let position = 0
+        // Escalar para que quepa siempre en una sola hoja
+        const ratio = Math.min(maxWidth / canvas.width, maxHeight / canvas.height)
+        const imgWidth = canvas.width * ratio
+        const imgHeight = canvas.height * ratio
 
-        // Primera página
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-        heightLeft -= pageHeight
+        // Centrar horizontalmente y verticalmente
+        const x = margin + (maxWidth - imgWidth) / 2
+        const y = margin + (maxHeight - imgHeight) / 2
 
-        // Agregar páginas adicionales si es necesario
-        while (heightLeft > 0) {
-            position = heightLeft - imgHeight
-            pdf.addPage()
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-            heightLeft -= pageHeight
-        }
+        pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight)
+        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+        const start = new Date(item.tripStart)
+        const end = new Date(item.tripEnd)
+        const diaInicio = String(start.getUTCDate()).padStart(2, '0')
+        const mesInicio = meses[start.getUTCMonth()]
+        const diaFin = String(end.getUTCDate()).padStart(2, '0')
+        const mesFin = meses[end.getUTCMonth()]
+        const nombre = (userStore.user?.name || 'Agenda').replace(/\s+/g, '_')
 
-        pdf.save(`Agenda-${item._id}.pdf`)
+        const fechas = (diaInicio === diaFin && mesInicio === mesFin)
+            ? `${diaInicio}-${mesInicio}`
+            : `${diaInicio}-${mesInicio}_al_${diaFin}-${mesFin}`
+
+        pdf.save(`Agenda_${fechas}_${nombre}.pdf`)
 
         console.log('✅ PDF descargado exitosamente')
         $q.notify({ type: 'positive', message: 'PDF generado exitosamente' })
@@ -312,142 +284,16 @@ const downloadOnePdf = async (item) => {
     }
 }
 
-const downloadAllPdf = async () => {
-    if (!signedSchedules.value.length) return
-
-    try {
-        console.log('🚀 Iniciando descarga de todos los PDFs')
-
-        const pdf = new jsPDF('p', 'mm', 'a4')
-        const pageWidth = pdf.internal.pageSize.getWidth()
-        const pageHeight = pdf.internal.pageSize.getHeight()
-
-        isPdfRendering.value = true
-        let isFirstAgenda = true
-
-        for (let i = 0; i < signedSchedules.value.length; i++) {
-            const item = signedSchedules.value[i]
-            console.log(`📄 Procesando ${i + 1}/${signedSchedules.value.length}:`, item._id)
-
-            selectedSchedule.value = item
-            await nextTick()
-            await new Promise(resolve => setTimeout(resolve, 500))
-
-            const element = await waitForPreviewEl()
-            if (!element) {
-                console.warn(`⚠️ Saltando agenda ${item._id} - elemento no válido`)
-                continue
-            }
-
-            await waitForImages(element)
-            await new Promise(resolve => setTimeout(resolve, 300))
-
-            const canvas = await html2canvas(element, {
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                allowTaint: true,
-                backgroundColor: '#ffffff',
-                windowWidth: element.scrollWidth,
-                windowHeight: element.scrollHeight
-            })
-
-            const imgData = canvas.toDataURL('image/png')
-            const imgWidth = pageWidth
-            const imgHeight = (canvas.height * pageWidth) / canvas.width
-
-            let heightLeft = imgHeight
-            let position = 0
-
-            // Si no es la primera agenda, agregar nueva página
-            if (!isFirstAgenda) {
-                pdf.addPage()
-            }
-            isFirstAgenda = false
-
-            // Primera página de esta agenda
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-            heightLeft -= pageHeight
-
-            // Agregar páginas adicionales si es necesario
-            while (heightLeft > 0) {
-                position = heightLeft - imgHeight
-                pdf.addPage()
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-                heightLeft -= pageHeight
-            }
-        }
-
-        pdf.save('Todas-las-agendas.pdf')
-        console.log('✅ Todos los PDFs generados')
-        $q.notify({ type: 'positive', message: 'PDFs generados exitosamente' })
-
-    } catch (error) {
-        console.error('❌ Error al generar PDFs:', error)
-        $q.notify({ type: 'negative', message: 'Error al generar los PDFs: ' + error.message })
-    } finally {
-        isPdfRendering.value = false
-        selectedSchedule.value = null
-    }
-}
-
-const downloadExcel = () => {
-    // 🔹 Convertimos la data a un formato limpio
-    const data = signedSchedules.value.map(item => ({
-        'No. Comisión': item.tripOrder,
-        'Lugar': item.places?.[0]?.data || '',
-        'Inicio': new Date(item.tripStart).toLocaleDateString('es-CO'),
-        'Fin': new Date(item.tripEnd).toLocaleDateString('es-CO'),
-        'Estado': item.status?.data || ''
-    }))
-
-    // 🔹 Crear hoja
-    const worksheet = XLSX.utils.json_to_sheet(data)
-
-    // 🔹 Rango de la tabla
-    const range = XLSX.utils.decode_range(worksheet['!ref'])
-
-    // 🔹 Aplicar estilos (centrado)
-    for (let R = range.s.r; R <= range.e.r; ++R) {
-        for (let C = range.s.c; C <= range.e.c; ++C) {
-            const cellAddress = XLSX.utils.encode_cell({ r: R, c: C })
-            if (!worksheet[cellAddress]) continue
-
-            worksheet[cellAddress].s = {
-                alignment: {
-                    horizontal: 'center',
-                    vertical: 'center'
-                }
-            }
-        }
-    }
-
-    // 🔹 Ancho automático de columnas
-    worksheet['!cols'] = Object.keys(data[0]).map(() => ({ wch: 22 }))
-
-    // 🔹 Activar filtros (fila de encabezados)
-    worksheet['!autofilter'] = {
-        ref: worksheet['!ref']
-    }
-
-    // 🔹 Crear libro
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Agendas')
-
-    // 🔹 Descargar
-    XLSX.writeFile(workbook, 'Agendas-firmadas.xlsx')
-}
-
 const titleUser = computed(() => {
-  const user = userStore.user
-  if (!user) return 'funcionario'
+    const user = userStore.user
+    if (!user) return 'funcionario'
 
-  return (
-    user.name ||
-    user.staffType?.data ||
-    user.role?.data ||
-    'N/A'
-  )
+    return (
+        user.name ||
+        user.staffType?.data ||
+        user.role?.data ||
+        'N/A'
+    )
 })
 
 

@@ -127,7 +127,7 @@ const isPdfRendering = ref(false)
 
 const columns = [
     { name: 'tripOrder', label: 'No. Comisión', field: 'tripOrder', align: 'center', sortable: true },
-    { name: 'place', label: 'Lugar', field: row => row.places?.[0]?.data || '-', align: 'center' },
+    { name: 'place', label: 'Lugar', field: row => row.places?.[0]?.data ?? row.place ?? '', align: 'center' },
     { name: 'tripStart', label: 'Inicio', field: row => new Date(row.tripStart).toLocaleDateString('es-CO'), align: 'center' },
     { name: 'tripEnd', label: 'Fin', field: row => new Date(row.tripEnd).toLocaleDateString('es-CO'), align: 'center' },
     { name: 'status', label: 'Estado', field: row => row.status.data, align: 'center' },
