@@ -44,8 +44,15 @@ export const useScheduleStore = defineStore('Schedules', {
         if (response) {
           const { data: responseData, status } = response
 
-          // ❌ ELIMINADO: socket.emit("nueva-solicitud", {...})
-          // El backend ya emite este evento
+          // Crear notificación de nueva agenda
+          if (responseData?._id) {
+            try {
+              const { useNotificationStore } = await import('./notificationStore.js')
+              await useNotificationStore().addNotification('schedule', { scheduleId: responseData._id })
+            } catch (e) {
+              console.warn('[Notif] Error al crear notificación:', e)
+            }
+          }
 
           return { data: responseData, status }
         }
@@ -67,8 +74,15 @@ export const useScheduleStore = defineStore('Schedules', {
         data
       })
 
-      // ❌ ELIMINADO: socket.emit("agenda-modificada", {...})
-      // El backend ya emite este evento
+      // Crear notificación si hubo cambio de estado
+      if (data.status && id) {
+        try {
+          const { useNotificationStore } = await import('./notificationStore.js')
+          await useNotificationStore().addNotification('schedule', { scheduleId: id })
+        } catch (e) {
+          console.warn('[Notif] Error al crear notificación:', e)
+        }
+      }
 
       return response
     },
