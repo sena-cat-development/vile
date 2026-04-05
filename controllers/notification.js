@@ -1,11 +1,12 @@
 import { Notification } from '../models/notification.js'
+import { ioInstance } from '../server.js'
 
 export const httpNotification = {
 
   // ✅ Crear notificación
   create: async (req, res) => {
     try {
-      const { userId, scheduleId, message } = req.body
+      const { userId, scheduleId, message, type, data } = req.body
 
       const now = new Date()
 
@@ -15,8 +16,18 @@ export const httpNotification = {
         message,
         date: now.toLocaleDateString(),
         time: now.toLocaleTimeString(),
-        read: false
+        read: false,
+        metadata: { type, ...data }
       })
+
+      // Emitir en tiempo real al destinatario
+      if (ioInstance && userId) {
+        const payload = {
+          ...notification.toObject(),
+          data: notification.metadata
+        }
+        ioInstance.to(String(userId)).emit('nueva-notificacion', payload)
+      }
 
       res.status(201).json(notification)
     } catch (error) {
