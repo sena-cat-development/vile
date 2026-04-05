@@ -36,6 +36,7 @@ routerSchedule.post(
 
 routerSchedule.post('/:scheduleId/radication', httpSchedule.addRadication)
 routerSchedule.put('/:scheduleId/radication/:radicationId', httpSchedule.editRadication)
+routerSchedule.delete('/:id', httpSchedule.delete)
 routerSchedule.put('/:id', [], httpSchedule.putSchedule)
 routerSchedule.post('/legalization/:id', uploadMiddleware.any(), httpSchedule.postLegalizacion)
 routerSchedule.put('/legalization/:id', [], httpSchedule.putLegalization)
