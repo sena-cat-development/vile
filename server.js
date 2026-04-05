@@ -16,12 +16,11 @@ import { routerInstitute } from './routes/institute.js'
 import { routerAmount } from './routes/Amount.js'
 import { routerNotification } from './routes/notification.js'
 
+import { setIo } from './socket.js'
+
 // 🔹 ESM: __dirname equivalente
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-
-// 🔹 Exportar instancia de io para usarla en controladores
-export let ioInstance = null
 
 class Server {
   constructor() {
@@ -33,8 +32,8 @@ class Server {
       cors: { origin: '*' }
     })
 
-    // Guardar instancia global
-    ioInstance = this.io
+    // Guardar instancia en singleton (sin exportar desde server.js)
+    setIo(this.io)
 
     this.connect()
     this.middlewares()
