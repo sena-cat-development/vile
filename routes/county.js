@@ -27,4 +27,5 @@ routerCounty.post('/', [], async (req, res) => {
     return res.json({ msg: 'departamento creado' })
 })
 
+
 export { routerCounty }
