@@ -15,6 +15,8 @@ import { routerCity } from './routes/city.js'
 import { routerInstitute } from './routes/institute.js'
 import { routerAmount } from './routes/Amount.js'
 import { routerNotification } from './routes/notification.js'
+import { setIo } from './socket.js'
+
 
 // 🔹 ESM: __dirname equivalente
 const __filename = fileURLToPath(import.meta.url)
@@ -30,9 +32,7 @@ class Server {
       cors: { origin: '*' }
     })
 
-    // Guardar instancia globalmente para usarla en controladores
-    global._io = this.io
-
+    setIo(this.io)
     this.connect()
     this.middlewares()
     this.routes()
@@ -43,17 +43,17 @@ class Server {
     await connect()
   }
 
-middlewares() {
-  this.app.use(cors())
-  this.app.use(express.json({ limit: '50mb' }))
-  this.app.use(express.urlencoded({ extended: true, limit: '50mb' }))
+  middlewares() {
+    this.app.use(cors())
+    this.app.use(express.json({ limit: '50mb' }))
+    this.app.use(express.urlencoded({ extended: true, limit: '50mb' }))
 
-  // 📁 Archivos públicos
-  this.app.use(express.static('public'))
+    // 📁 Archivos públicos
+    this.app.use(express.static('public'))
 
-  // 🖼️ EXPONER IMÁGENES LOCALES
-  this.app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
-}
+    // 🖼️ EXPONER IMÁGENES LOCALES
+    this.app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+  }
 
 
 
