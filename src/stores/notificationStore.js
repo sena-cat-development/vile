@@ -98,10 +98,16 @@ export const useNotificationStore = defineStore('notifications', {
     },
 
     // ── Carga de datos ─────────────────────────────────────────────────────
+    _normalize(n) {
+      // El backend guarda el campo "data" del frontend como "metadata"
+      if (n.metadata && !n.data) n.data = n.metadata
+      return n
+    },
+
     async loadNotifications(userId) {
       try {
         const { data } = await instance.get(`/api/notifications/user/${userId}`)
-        this.notifications = data ?? []
+        this.notifications = (data ?? []).map(n => this._normalize(n))
         this.unreadCount = this.notifications.filter(n => !n.read).length
 
         if (!this.notificationsLoaded) {
@@ -352,7 +358,7 @@ export const useNotificationStore = defineStore('notifications', {
       socket.on('connect', join)
       socket.on('disconnect', () => console.warn('Socket desconectado'))
 
-      socket.on('nueva-notificacion', n => this._insert(n))
+      socket.on('nueva-notificacion', n => this._insert(this._normalize(n)))
 
       if (socket.connected) join()
     },

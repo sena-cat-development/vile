@@ -234,7 +234,7 @@ function goLogin() {
     $q.localStorage.set('lastSessionTime', new Date().toISOString())
     $q.localStorage.remove('token')
     $q.localStorage.remove('user')
-    notificationStore.$reset()
+    notificationStore.teardown()
     router.replace({ path: '/' })
     showNotify('Se cerró la sesión', 'positive', 'check_circle')
 }
