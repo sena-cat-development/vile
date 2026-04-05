@@ -1,5 +1,5 @@
 import { Notification } from '../models/notification.js'
-import { ioInstance } from '../server.js'
+import { getIo } from '../socket.js'
 
 export const httpNotification = {
 
@@ -21,12 +21,13 @@ export const httpNotification = {
       })
 
       // Emitir en tiempo real al destinatario
-      if (ioInstance && userId) {
+      const io = getIo()
+      if (io && userId) {
         const payload = {
           ...notification.toObject(),
           data: notification.metadata
         }
-        ioInstance.to(String(userId)).emit('nueva-notificacion', payload)
+        io.to(String(userId)).emit('nueva-notificacion', payload)
       }
 
       res.status(201).json(notification)
