@@ -20,7 +20,7 @@
                         <q-btn icon="visibility" color="blue" round dense flat @click="openPreview(props.row)">
                             <q-tooltip>Ver agenda</q-tooltip>
                         </q-btn>
-                        <q-btn icon="download" color="green" round dense flat @click="downloadOnePdf(props.row)">
+                        <q-btn v-if="props.row.typeSchedule !== 'contractor'" icon="download" color="green" round dense flat @click="downloadOnePdf(props.row)">
                             <q-tooltip>Descargar PDF</q-tooltip>
                         </q-btn>
                     </div>

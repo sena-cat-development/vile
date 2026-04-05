@@ -20,12 +20,6 @@
                 <q-table :rows="usersRows" :columns="userColumns" :filter="filter" row-key="userId" :loading="loading"
                     flat bordered class="shadow-2 rounded-borders">
 
-                    <!-- LEGALIZAR TODAS LAS AGENDAS -->
-                    <template v-slot:top-left>
-                        <q-btn v-if="rows.some(r => r.status?.index === 2)" color="orange" icon="send"
-                            label="Legalizar todas" :loading="loading" @click="confirmSendAllToAdmin" />
-                    </template>
-
                     <template v-slot:top-right>
                         <q-btn color="green" icon="refresh" label="Recargar" @click="fetchSignedSchedules" />
                     </template>
@@ -81,13 +75,6 @@
                     <q-table :rows="selectedUser?.agendas || []" :columns="agendaColumns" row-key="_id" flat bordered
                         class="shadow-2 rounded-borders">
 
-                        <!-- BOTÓN LEGALIZAR TODAS DEL USUARIO -->
-                        <template v-slot:top-left>
-                            <q-btn v-if="selectedUser?.agendas.some(a => a.status?.index === 2)" color="orange"
-                                icon="send" label="Legalizar todas de este usuario"
-                                @click="confirmSendAllUserAgendas" />
-                        </template>
-
                         <!-- ENTIDAD -->
                         <template v-slot:body-cell-company="props">
                             <q-td :props="props" class="text-center">
@@ -125,10 +112,10 @@
                                     <q-tooltip>Descargar PDF</q-tooltip>
                                 </q-btn>
 
-                                <!-- ENVIAR AL ADMINISTRADOR -->
-                                <q-btn v-if="props.row.status?.index === 2" dense round icon="send" color="orange"
-                                    class="q-ml-sm" @click="confirmSendToAdmin(props.row)">
-                                    <q-tooltip>Enviar a legalizar</q-tooltip>
+                                <!-- ELIMINAR -->
+                                <q-btn dense round icon="delete" color="negative" class="q-ml-sm"
+                                    @click="confirmDelete(props.row)">
+                                    <q-tooltip>Eliminar agenda</q-tooltip>
                                 </q-btn>
 
                             </q-td>
@@ -159,67 +146,21 @@
             </q-card>
         </q-dialog>
 
-        <!-- DIALOG: CONFIRMACIÓN LEGALIZAR UNA AGENDA -->
-        <q-dialog v-model="showConfirmDialog" persistent>
+        <!-- DIALOG: CONFIRMACIÓN ELIMINAR AGENDA -->
+        <q-dialog v-model="showDeleteDialog" persistent>
             <q-card style="min-width: 400px">
-                <q-card-section class="row items-center bg-orange text-white">
+                <q-card-section class="row items-center bg-negative text-white">
                     <q-icon name="warning" size="md" class="q-mr-sm" />
-                    <div class="text-h6">Confirmar Legalización</div>
+                    <div class="text-h6">Eliminar Agenda</div>
                 </q-card-section>
 
                 <q-card-section>
-                    <p class="text-body1">¿Está seguro que desea enviar esta agenda al Administrador para legalización?
-                    </p>
+                    <p class="text-body1">¿Está seguro que desea eliminar esta agenda? Esta acción no se puede deshacer.</p>
                 </q-card-section>
 
                 <q-card-actions align="right">
                     <q-btn flat label="Cancelar" color="grey" v-close-popup />
-                    <q-btn label="Confirmar" color="orange" icon="send" @click="sendToAdmin" />
-                </q-card-actions>
-            </q-card>
-        </q-dialog>
-
-        <!-- DIALOG: CONFIRMACIÓN LEGALIZAR TODAS -->
-        <q-dialog v-model="showConfirmAllDialog" persistent>
-            <q-card style="min-width: 400px">
-                <q-card-section class="row items-center bg-orange text-white">
-                    <q-icon name="warning" size="md" class="q-mr-sm" />
-                    <div class="text-h6">Confirmar Legalización Masiva</div>
-                </q-card-section>
-
-                <q-card-section>
-                    <p class="text-body1">
-                        ¿Está seguro que desea enviar <strong>{{ pendingAgendasCount }}</strong>
-                        {{ pendingAgendasCount === 1 ? 'agenda' : 'agendas' }} al Administrador para legalización?
-                    </p>
-                </q-card-section>
-
-                <q-card-actions align="right">
-                    <q-btn flat label="Cancelar" color="grey" v-close-popup />
-                    <q-btn label="Confirmar todas" color="orange" icon="send" @click="sendAllToAdmin" />
-                </q-card-actions>
-            </q-card>
-        </q-dialog>
-
-        <!-- DIALOG: CONFIRMACIÓN LEGALIZAR TODAS DE UN USUARIO -->
-        <q-dialog v-model="showConfirmUserDialog" persistent>
-            <q-card style="min-width: 400px">
-                <q-card-section class="row items-center bg-orange text-white">
-                    <q-icon name="warning" size="md" class="q-mr-sm" />
-                    <div class="text-h6">Confirmar Legalización de Usuario</div>
-                </q-card-section>
-
-                <q-card-section>
-                    <p class="text-body1">
-                        ¿Está seguro que desea enviar <strong>{{ userPendingAgendasCount }}</strong>
-                        {{ userPendingAgendasCount === 1 ? 'agenda' : 'agendas' }}
-                        de <strong>{{ selectedUser?.name }}</strong> al Administrador para legalización?
-                    </p>
-                </q-card-section>
-
-                <q-card-actions align="right">
-                    <q-btn flat label="Cancelar" color="grey" v-close-popup />
-                    <q-btn label="Confirmar todas" color="orange" icon="send" @click="sendAllUserAgendas" />
+                    <q-btn label="Eliminar" color="negative" icon="delete" :loading="loading" @click="handleDelete" />
                 </q-card-actions>
             </q-card>
         </q-dialog>
@@ -254,17 +195,8 @@ const selectedRow = ref(null)
 const showAgendasDialog = ref(false)
 const selectedUser = ref(null)
 
-// Diálogos de confirmación
-const showConfirmDialog = ref(false)
-const showConfirmAllDialog = ref(false)
-const showConfirmUserDialog = ref(false)
-const agendaToSend = ref(null)
-
-// Contadores
-const pendingAgendasCount = computed(() => rows.value.filter(r => r.status?.index === 2).length)
-const userPendingAgendasCount = computed(() =>
-    selectedUser.value?.agendas.filter(a => a.status?.index === 2).length || 0
-)
+const showDeleteDialog = ref(false)
+const agendaToDelete = ref(null)
 
 // COLUMNAS TABLA PRINCIPAL (USUARIOS)
 const userColumns = [
@@ -363,19 +295,6 @@ function handleView(schedule) {
     showDialog.value = true
 }
 
-function refreshSelectedUser() {
-    if (!selectedUser.value) return
-
-    const updated = usersRows.value.find(
-        u => u.userId === selectedUser.value.userId
-    )
-
-    if (updated) {
-        selectedUser.value = updated
-    }
-}
-
-
 // DESCARGAR DOCUMENTO FIRMADO (PDF MULTIPÁGINA)
 async function handleDownload(schedule) {
     try {
@@ -437,117 +356,27 @@ async function handleDownload(schedule) {
     }
 }
 
-// ENVIAR UNA AGENDA AL ADMINISTRADOR
-function confirmSendToAdmin(row) {
-    agendaToSend.value = row
-    showConfirmDialog.value = true
+function confirmDelete(row) {
+    agendaToDelete.value = row
+    showDeleteDialog.value = true
 }
 
-async function sendToAdmin() {
-    if (!agendaToSend.value) return
+async function handleDelete() {
+    if (!agendaToDelete.value) return
 
     try {
-        await scheduleStore.putSchedule({
-            status: {
-                index: 3,
-                data: "legalización enviada a contratista",
-                justification: '-',
-                number: agendaToSend.value.status.number + 1
-            }
-        }, agendaToSend.value._id)
-
+        await scheduleStore.deleteSchedule(agendaToDelete.value._id)
+        showNotify('Agenda eliminada', 'positive', 'delete')
+        showDeleteDialog.value = false
         await fetchSignedSchedules()
-        refreshSelectedUser()
-
-        showNotify('Agenda enviada al Administrador', 'positive', 'send')
-        showConfirmDialog.value = false
-        fetchSignedSchedules()
-    } catch (error) {
-        console.error(error)
-        showNotify('Error enviando la agenda', 'negative')
-    }
-}
-
-// ENVIAR TODAS LAS AGENDAS PENDIENTES AL ADMINISTRADOR
-function confirmSendAllToAdmin() {
-    showConfirmAllDialog.value = true
-}
-
-async function sendAllToAdmin() {
-    const agendas = rows.value.filter(r => r.status?.index === 2)
-
-    if (!agendas.length) {
-        showNotify('No hay agendas para legalizar', 'warning')
-        showConfirmAllDialog.value = false
-        return
-    }
-
-    loading.value = true
-
-    try {
-        for (const row of agendas) {
-            await scheduleStore.putSchedule({
-                status: {
-                    index: 3,
-                    data: 'legalización enviada a contratista',
-                    justification: '-',
-                    number: row.status.number + 1
-                }
-            }, row._id)
+        if (selectedUser.value) {
+            const updated = usersRows.value.find(u => u.userId === selectedUser.value.userId)
+            if (updated) selectedUser.value = updated
+            else showAgendasDialog.value = false
         }
-
-        showNotify('Todas las agendas fueron enviadas al Administrador ✅', 'positive', 'send')
-        showConfirmAllDialog.value = false
-        fetchSignedSchedules()
-
     } catch (error) {
         console.error(error)
-        showNotify('Error legalizando todas las agendas', 'negative')
-    } finally {
-        loading.value = false
-    }
-}
-
-// ENVIAR TODAS LAS AGENDAS DE UN USUARIO
-function confirmSendAllUserAgendas() {
-    showConfirmUserDialog.value = true
-}
-
-async function sendAllUserAgendas() {
-    const agendas = selectedUser.value?.agendas.filter(a => a.status?.index === 2) || []
-
-    if (!agendas.length) {
-        showNotify('No hay agendas pendientes para este usuario', 'warning')
-        showConfirmUserDialog.value = false
-        return
-    }
-
-    loading.value = true
-
-    try {
-        for (const row of agendas) {
-            await scheduleStore.putSchedule({
-                status: {
-                    index: 3,
-                    data: 'Enviada al Administrador',
-                    justification: '-',
-                    number: row.status.number + 1
-                }
-            }, row._id)
-        }
-
-        showNotify(`${agendas.length} agenda(s) de ${selectedUser.value.name} enviadas ✅`, 'positive', 'send')
-        showConfirmUserDialog.value = false
-        fetchSignedSchedules()
-
-        await fetchSignedSchedules()
-        refreshSelectedUser()
-
-    } catch (error) {
-        console.error(error)
-        showNotify('Error legalizando las agendas del usuario', 'negative')
-    } finally {
-        loading.value = false
+        showNotify('Error eliminando la agenda', 'negative')
     }
 }
 

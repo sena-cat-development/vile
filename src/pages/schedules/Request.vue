@@ -390,18 +390,23 @@ async function renderInvoiceToPage() {
     const pageW = doc.internal.pageSize.getWidth()   // 612pt
     const pageH = doc.internal.pageSize.getHeight()  // 792pt
 
+    const margin = 20 // pt de margen en todos los lados
+    const maxW = pageW - margin * 2
+    const maxH = pageH - margin * 2
+
     const imgAspect = canvas.height / canvas.width
-    let drawW = pageW
-    let drawH = pageW * imgAspect
+    let drawW = maxW
+    let drawH = drawW * imgAspect
 
     // Si excede la página, escalar para que entre completo
-    if (drawH > pageH) {
-        drawH = pageH
-        drawW = pageH / imgAspect
+    if (drawH > maxH) {
+        drawH = maxH
+        drawW = drawH / imgAspect
     }
 
     const x = (pageW - drawW) / 2
-    doc.addImage(canvas.toDataURL('image/jpeg', 0.97), 'JPEG', x, 0, drawW, drawH)
+    const y = (pageH - drawH) / 2
+    doc.addImage(canvas.toDataURL('image/jpeg', 0.97), 'JPEG', x, y, drawW, drawH)
 
     return doc
 }
@@ -606,6 +611,9 @@ async function getSign() {
         )
 
         showNotify('Agenda firmada correctamente ✅', 'positive')
+
+        // Esperar a que el DOM se actualice con la firma antes de capturar
+        await nextTick()
 
         // Descargar PDF antes de resetear la vista (el invoice sigue visible)
         await downloadPDF()

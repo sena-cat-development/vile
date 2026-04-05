@@ -23,13 +23,8 @@
 
                     <template v-slot:top-left>
                         <div v-show="!showPreview" class="col-10 justify-end flex">
-                            <q-btn
-                                @click="showDialog = true"
-                                icon="add"
-                                label="Crear Agenda"
-                                color="primary"
-                                :disable="presupuestoAgotado"
-                            >
+                            <q-btn @click="showDialog = true" icon="add" label="Crear Agenda" color="primary"
+                                :disable="presupuestoAgotado">
                                 <q-tooltip v-if="presupuestoAgotado">
                                     Presupuesto agotado — no se pueden crear más agendas
                                 </q-tooltip>
@@ -192,7 +187,8 @@
 
                             </div>
                             <div class="col-12 text-center">
-                                <p class="q-my-none text-primary form-section-title text-center" style="border-left: none; border-bottom: 3px solid currentColor; padding-left: 0; padding-bottom: 4px;">
+                                <p class="q-my-none text-primary form-section-title text-center"
+                                    style="border-left: none; border-bottom: 3px solid currentColor; padding-left: 0; padding-bottom: 4px;">
                                     Ruta de viaje y medios de transporte
                                 </p>
                             </div>
@@ -208,7 +204,8 @@
                                             <div class="row items-center q-mb-sm q-pl-sm">
                                                 <q-icon name="touch_app" color="green-7" size="18px" class="q-mr-xs" />
                                                 <span class="text-subtitle2 text-green-8">Ruta de Ida</span>
-                                                <q-badge color="green-2" text-color="green-9" label="Haz clic para agregar" class="q-ml-sm" />
+                                                <q-badge color="green-2" text-color="green-9"
+                                                    label="Haz clic para agregar" class="q-ml-sm" />
                                             </div>
 
                                             <!-- 🔹 Municipios con arrastre -->
@@ -231,10 +228,11 @@
                                             <q-menu v-model="savegoOption" fit max-width="260px"
                                                 transition-show="jump-down" transition-hide="jump-up">
                                                 <q-card flat bordered class="q-pa-sm bg-white rounded-borders shadow-2">
-                                                    <q-select filled dense use-input stack-label v-model="goCounty"
-                                                        :options="gocountyOptions" label="Departamento" use-chips
-                                                        emit-value map-options hint="Selecciona el departamento"
-                                                        @filter="(val, update) => update(() => {
+                                                    <div class="text-grey-7 text-caption q-mb-xs">
+                                                        Selecciona el departamento
+                                                    </div> <q-select filled dense use-input stack-label
+                                                        v-model="goCounty" :options="gocountyOptions"
+                                                        label="Departamento" use-chips emit-value map-options @filter="(val, update) => update(() => {
                                                             gocountyOptions = mainCounty.filter(el =>
                                                                 el.label.toLowerCase().includes(val.toLowerCase())
                                                             )
@@ -251,11 +249,14 @@
                                                             }
                                                         }" prepend-icon="map" class="q-mb-md" />
 
+                                                    <div class="text-grey-7 text-caption q-mb-xs">
+                                                        Selecciona los municipios correspondientes
+                                                    </div>
+
                                                     <q-select filled stack-label use-input use-chips multiple
                                                         v-model="goCity" :options="gocityOptions"
                                                         label="Seleccionar Municipio" :loading="loadingCity"
-                                                        :disable="!goCounty" hint="Selecciona uno o varios municipios"
-                                                        @filter="(val, update) => {
+                                                        :disable="!goCounty" @filter="(val, update) => {
                                                             update(() => {
                                                                 gocityOptions = maingoCity.filter(el =>
                                                                     el.label.toLowerCase().includes(val.toLowerCase())
@@ -277,9 +278,11 @@
                                                         </template>
                                                     </q-select>
 
+                                                    <div class="text-grey-7 text-caption q-mb-xs">
+                                                        Escribe una vereda o una ruta especifica
+                                                    </div>
                                                     <q-input filled dense clearable label="Otro destino"
                                                         v-model.trim="goOther" class="q-mb-md"
-                                                        hint="Escribe un destino personalizado"
                                                         prepend-icon="edit_location" />
 
                                                     <div class="flex justify-end q-mt-md">
@@ -317,7 +320,8 @@
                                             <div class="row items-center q-mb-sm q-pl-sm">
                                                 <q-icon name="touch_app" color="green-7" size="18px" class="q-mr-xs" />
                                                 <span class="text-subtitle2 text-green-8">Ruta de Regreso</span>
-                                                <q-badge color="green-2" text-color="green-9" label="Haz clic para agregar" class="q-ml-sm" />
+                                                <q-badge color="green-2" text-color="green-9"
+                                                    label="Haz clic para agregar" class="q-ml-sm" />
                                             </div>
 
                                             <!-- 🔹 Municipios con arrastre -->
@@ -342,14 +346,13 @@
                                                 transition-show="jump-down" transition-hide="jump-up">
                                                 <q-card flat bordered class="q-pa-sm bg-white rounded-borders shadow-2">
 
-                                                    <q-input filled dense clearable stack-label
-                                                        v-model.trim="returnOther" label="Otro destino"
-                                                        prepend-icon="edit_location" class="q-mb-md" />
+                                                    <div class="text-grey-7 text-caption q-mb-xs">
+                                                        Selecciona el departamento
+                                                    </div>
 
                                                     <q-select filled dense use-input stack-label v-model="returnCounty"
                                                         :options="returncountyOptions" label="Departamento" use-chips
-                                                        emit-value map-options hint="Selecciona el departamento"
-                                                        @filter="(val, update) => update(() => {
+                                                        emit-value map-options @filter="(val, update) => update(() => {
                                                             returncountyOptions = mainCounty.filter(el =>
                                                                 el.label.toLowerCase().includes(val.toLowerCase())
                                                             )
@@ -366,10 +369,13 @@
                                                             }
                                                         }" prepend-icon="map" class="q-mb-md" />
 
+                                                    <div class="text-grey-7 text-caption q-mb-xs">
+                                                        Selecciona los municipios correspondientes
+                                                    </div>
+
                                                     <q-select filled stack-label use-input use-chips multiple
                                                         v-model="returnCity" :options="returncityOptions"
-                                                        label="Seleccionar Municipio" :loading="loadingCity"
-                                                        hint="Selecciona uno o varios municipios" @filter="(val, update) => {
+                                                        label="Seleccionar Municipio" :loading="loadingCity" @filter="(val, update) => {
                                                             update(() => {
                                                                 returncityOptions = mainreturnCity.filter(el =>
                                                                     el.label.toLowerCase().includes(val.toLowerCase())
@@ -390,6 +396,14 @@
                                                             </q-item>
                                                         </template>
                                                     </q-select>
+
+                                                    <div class="text-grey-7 text-caption q-mb-xs">
+                                                        Escribe una verda o una ruta especifica
+                                                    </div>
+
+                                                    <q-input filled dense clearable stack-label
+                                                        v-model.trim="returnOther" label="Otro destino"
+                                                        prepend-icon="edit_location" class="q-mb-md" />
 
                                                     <div class="flex justify-end q-mt-md">
                                                         <q-btn color="green" label="Agregar" glossy unelevated push
@@ -441,7 +455,8 @@
                                             <div class="row items-center q-mb-sm q-pl-sm">
                                                 <q-icon name="touch_app" color="green-7" size="18px" class="q-mr-xs" />
                                                 <span class="text-subtitle2 text-green-8">Transporte de Ida</span>
-                                                <q-badge color="green-2" text-color="green-9" label="Haz clic para agregar" class="q-ml-sm" />
+                                                <q-badge color="green-2" text-color="green-9"
+                                                    label="Haz clic para agregar" class="q-ml-sm" />
                                             </div>
 
                                             <div class="q-gutter-xs q-px-sm q-pb-sm">
@@ -489,7 +504,8 @@
                                             <div class="row items-center q-mb-sm q-pl-sm">
                                                 <q-icon name="touch_app" color="green-7" size="18px" class="q-mr-xs" />
                                                 <span class="text-subtitle2 text-green-8">Transporte de Regreso</span>
-                                                <q-badge color="green-2" text-color="green-9" label="Haz clic para agregar" class="q-ml-sm" />
+                                                <q-badge color="green-2" text-color="green-9"
+                                                    label="Haz clic para agregar" class="q-ml-sm" />
                                             </div>
 
                                             <div class="q-gutter-xs q-px-sm q-pb-sm">
@@ -541,7 +557,8 @@
                                 </div>
                             </div>
                             <div class="col-12 text-center q-mt-md">
-                                <p class="q-my-none text-primary form-section-title" style="border-left: none; border-bottom: 3px solid currentColor; padding-left: 0; padding-bottom: 4px;">
+                                <p class="q-my-none text-primary form-section-title"
+                                    style="border-left: none; border-bottom: 3px solid currentColor; padding-left: 0; padding-bottom: 4px;">
                                     Lugar del viaje
                                 </p>
                             </div>
@@ -549,14 +566,14 @@
                             <div class="row" style="width: 90%;">
                                 <div class="col-12">
                                     <div class="col-10 q-mt-md">
-                                        <div class="place-inline-form q-pa-sm" :class="{ 'place-disabled': regional !== null || loadingCounty }">
+                                        <div class="place-inline-form q-pa-sm"
+                                            :class="{ 'place-disabled': regional !== null || loadingCounty }">
 
                                             <!-- Lugar seleccionado (chip) -->
                                             <div v-if="place.length > 0" class="row q-mb-sm q-gutter-xs">
-                                                <q-chip v-for="(element, index) in place" :key="index"
-                                                    removable :label="element.data" color="primary"
-                                                    text-color="white" icon="location_on" size="md"
-                                                    @remove="place.splice(index, 1)" />
+                                                <q-chip v-for="(element, index) in place" :key="index" removable
+                                                    :label="element.data" color="primary" text-color="white"
+                                                    icon="location_on" size="md" @remove="place.splice(index, 1)" />
                                             </div>
 
                                             <div class="row q-col-gutter-sm">
@@ -565,8 +582,7 @@
                                                     <q-select filled dense stack-label use-input v-model="placeCounty"
                                                         :options="placecountyOptions" label="Departamento"
                                                         :disable="place.length > 0 || otherPlace !== null || regional !== null || loadingCounty"
-                                                        color="primary"
-                                                        @filter="(val, update) => {
+                                                        color="primary" @filter="(val, update) => {
                                                             update(() => {
                                                                 placecountyOptions = mainplaceCounty.filter(el =>
                                                                     el.label.toLowerCase().includes(val.toLowerCase())
@@ -596,8 +612,7 @@
                                                     <q-select filled dense stack-label use-input v-model="placeCity"
                                                         :options="placecityOptions" label="Municipio"
                                                         :disable="place.length > 0 || otherPlace !== null || loadingCity || !placeCounty || regional !== null || loadingCounty"
-                                                        :loading="loadingCity" color="primary"
-                                                        @filter="(val, update) => {
+                                                        :loading="loadingCity" color="primary" @filter="(val, update) => {
                                                             update(() => {
                                                                 placecityOptions = mainplaceCity.filter(el =>
                                                                     el.label.toLowerCase().includes(val.toLowerCase())
@@ -617,7 +632,8 @@
 
                                                 <!-- Otro destino libre -->
                                                 <div class="col-12">
-                                                    <q-input filled dense stack-label clearable v-model.trim="otherPlace"
+                                                    <q-input filled dense stack-label clearable
+                                                        v-model.trim="otherPlace"
                                                         label="Otro destino (ciudad, vereda, país...)"
                                                         :disable="place.length > 0 || placeCounty !== null || placeCity !== null || regional !== null || loadingCounty"
                                                         color="primary"
@@ -630,7 +646,8 @@
 
                                                 <!-- Botón Agregar -->
                                                 <div class="col-12 flex justify-end">
-                                                    <q-btn label="Agregar lugar" icon="add_location_alt" color="primary" unelevated
+                                                    <q-btn label="Agregar lugar" icon="add_location_alt" color="primary"
+                                                        unelevated
                                                         :disable="place.length > 0 || (!otherPlace && !placeCity) || regional !== null || loadingCounty"
                                                         @click="() => {
                                                             if (otherPlace) {
@@ -660,7 +677,8 @@
                                 <div class="col-6" style="padding-right: 8px;">
                                     <!-- ENTIDAD O EMPRESA -->
                                     <div class="col-10 q-mt-md">
-                                        <q-input filled stack-label v-model="company" label="Entidad o Empresa" color="primary">
+                                        <q-input filled stack-label v-model="company" label="Entidad o Empresa"
+                                            color="primary">
                                             <template v-slot:prepend>
                                                 <q-icon name="business" color="primary" />
                                             </template>
@@ -670,7 +688,8 @@
                                 <div class="col-6" style="padding-right: 8px;">
                                     <!-- CONTACTO -->
                                     <div class="col-10 q-mt-md">
-                                        <q-input filled stack-label v-model="companyContact" label="Contacto" color="primary">
+                                        <q-input filled stack-label v-model="companyContact" label="Contacto"
+                                            color="primary">
                                             <template v-slot:prepend>
                                                 <q-icon name="person" color="primary" />
                                             </template>
@@ -680,45 +699,60 @@
                             </div>
 
                             <div class="col-12 text-center q-mt-md">
-                                <p class="q-my-none text-primary form-section-title" style="border-left: none; border-bottom: 3px solid currentColor; padding-left: 0; padding-bottom: 4px;">
+                                <p class="q-my-none text-primary form-section-title"
+                                    style="border-left: none; border-bottom: 3px solid currentColor; padding-left: 0; padding-bottom: 4px;">
                                     Fechas y actividades del desplazamiento
                                 </p>
                             </div>
 
                             <!-- FECHAS -->
+                            <!-- FECHAS -->
                             <div class="row" style="width:90%">
                                 <div class="col-6" style="padding-right: 8px;">
                                     <div class="col-10 q-mt-md">
-                                        <q-input filled stack-label v-model="tripStart" label="Fecha Inicio Desplazamiento"
-                                            readonly color="primary">
+                                        <q-input filled stack-label :model-value="formatDateDMY(tripStart)"
+                                            label="Fecha Inicio Desplazamiento" readonly color="primary">
                                             <template v-slot:append>
                                                 <q-icon name="event" class="cursor-pointer" color="primary">
-                                                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                                                    <q-popup-proxy cover transition-show="scale"
+                                                        transition-hide="scale">
+
+                                                        <!-- 🔥 IMPORTANTE: mantener formato ISO -->
                                                         <q-date v-model="tripStart" mask="YYYY-MM-DD"
-                                                            :options="d => d >= isoDate.replace(/-/g, '/')" color="primary">
+                                                            :options="d => d >= isoDate.replace(/-/g, '/')"
+                                                            color="primary">
                                                             <div class="row items-center justify-end">
-                                                                <q-btn v-close-popup label="Cerrar" color="primary" flat />
+                                                                <q-btn v-close-popup label="Cerrar" color="primary"
+                                                                    flat />
                                                             </div>
                                                         </q-date>
+
                                                     </q-popup-proxy>
                                                 </q-icon>
                                             </template>
                                         </q-input>
                                     </div>
                                 </div>
+
                                 <div class="col-6" style="padding-left: 8px;">
                                     <div class="col-10 q-mt-md">
-                                        <q-input filled stack-label v-model="tripEnd" label="Fecha Fin Desplazamiento"
-                                            readonly color="primary">
+                                        <q-input filled stack-label :model-value="formatDateDMY(tripEnd)"
+                                            label="Fecha Fin Desplazamiento" readonly color="primary">
                                             <template v-slot:append>
                                                 <q-icon name="event" class="cursor-pointer" color="primary">
-                                                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                                                    <q-popup-proxy cover transition-show="scale"
+                                                        transition-hide="scale">
+
+                                                        <!-- 🔥 IMPORTANTE: mantener formato ISO -->
                                                         <q-date v-model="tripEnd" mask="YYYY-MM-DD"
-                                                            :options="d => d >= isoDate.replace(/-/g, '/')" color="primary">
+                                                            :options="d => d >= isoDate.replace(/-/g, '/')"
+                                                            color="primary">
                                                             <div class="row items-center justify-end">
-                                                                <q-btn v-close-popup label="Cerrar" color="primary" flat />
+                                                                <q-btn v-close-popup label="Cerrar" color="primary"
+                                                                    flat />
                                                             </div>
                                                         </q-date>
+
                                                     </q-popup-proxy>
                                                 </q-icon>
                                             </template>
@@ -925,7 +959,7 @@
                                             <q-item-section>
                                                 <!-- Nombre -->
                                                 <q-item-label class="text-weight-bold">
-                                                    {{ scope.opt.code }}  {{ scope.opt.name }}
+                                                    {{ scope.opt.code }} {{ scope.opt.name }}
                                                 </q-item-label>
 
                                                 <!-- Dependency -->
@@ -992,8 +1026,8 @@
                                         </div>
                                     </div>
                                     <div class="col-12 justify-end flex q-pb-sm q-pr-sm q-gutter-xs">
-                                        <input ref="signFileInput" type="file" accept="image/*"
-                                            style="display:none" @change="onSignFileChange" />
+                                        <input ref="signFileInput" type="file" accept="image/*" style="display:none"
+                                            @change="onSignFileChange" />
                                         <q-btn @click="signFileInput.click()" icon="upload" label="Subir Firma"
                                             class="bg-primary text-white" />
                                         <q-btn v-if="sign.contractor" @click="sign.contractor = null; yaFirmo = false"
@@ -1044,7 +1078,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onBeforeMount, onMounted, reactive, nextTick  } from 'vue'
+import { ref, computed, onBeforeMount, onMounted, reactive, nextTick } from 'vue'
 
 import draggable from 'vuedraggable'
 
@@ -1098,10 +1132,10 @@ const cdp = reactive({
 
 
 const getFullUrl = (path) => {
-  if (!path) return null;
-  if (path.startsWith('http')) return path;
-  const encoded = encodeURI(path);
-  return `${import.meta.env.VITE_API_URL}${encoded}`;
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    const encoded = encodeURI(path);
+    return `${import.meta.env.VITE_API_URL}${encoded}`;
 }
 
 
@@ -1159,57 +1193,57 @@ import html2canvas from 'html2canvas'
 
 async function descargarFormatoPDF() {
 
-  const notif = $q.notify({
-    type: 'ongoing',
-    message: 'Generando PDF...'
-  });
+    const notif = $q.notify({
+        type: 'ongoing',
+        message: 'Generando PDF...'
+    });
 
-  const element = invoice.value;
+    const element = invoice.value;
 
-  // 🔥 Activar modo carta
-  element.classList.add('export-mode');
+    // 🔥 Activar modo carta
+    element.classList.add('export-mode');
 
-  await nextTick(); // importante en Vue
+    await nextTick(); // importante en Vue
 
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    useCORS: true
-  });
+    const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true
+    });
 
-  const imgData = canvas.toDataURL('image/png');
+    const imgData = canvas.toDataURL('image/png');
 
-  const pdf = new jsPDF({
-    orientation: 'p',
-    unit: 'pt',
-    format: 'letter'
-  });
+    const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'pt',
+        format: 'letter'
+    });
 
-  const pageWidth = 612;
-  const marginTop = 40;
-  const marginLeft = 20;
+    const pageWidth = 612;
+    const marginTop = 40;
+    const marginLeft = 20;
 
-  const imgWidth = pageWidth - (marginLeft * 2);
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const imgWidth = pageWidth - (marginLeft * 2);
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  pdf.addImage(
-    imgData,
-    'PNG',
-    marginLeft,
-    marginTop,
-    imgWidth,
-    imgHeight
-  );
+    pdf.addImage(
+        imgData,
+        'PNG',
+        marginLeft,
+        marginTop,
+        imgWidth,
+        imgHeight
+    );
 
-  pdf.save('formatoContratista.pdf');
+    pdf.save('formatoContratista.pdf');
 
-  // 🔥 Quitar modo carta
-  element.classList.remove('export-mode');
+    // 🔥 Quitar modo carta
+    element.classList.remove('export-mode');
 
-  notif({
-    type: 'positive',
-    message: 'Formato en PDF descargado',
-    timeout: 1300
-  });
+    notif({
+        type: 'positive',
+        message: 'Formato en PDF descargado',
+        timeout: 1300
+    });
 }
 
 
@@ -2089,22 +2123,22 @@ async function updateSchedule() {
 
 }
 function syncHoursAllDays(field) {
-  if (!activities.value.length) return
+    if (!activities.value.length) return
 
-  const baseDay = activities.value[0]
-  if (!baseDay.items.length) return
+    const baseDay = activities.value[0]
+    if (!baseDay.items.length) return
 
-  const baseValue = baseDay.items[0][field]
-  if (!baseValue) return
+    const baseValue = baseDay.items[0][field]
+    if (!baseValue) return
 
-  activities.value.forEach((day, dayIndex) => {
-    day.items.forEach((item, itemIndex) => {
-      if (dayIndex === 0 && itemIndex === 0) return
+    activities.value.forEach((day, dayIndex) => {
+        day.items.forEach((item, itemIndex) => {
+            if (dayIndex === 0 && itemIndex === 0) return
 
-      // 🔹 SIEMPRE actualiza
-      item[field] = baseValue
+            // 🔹 SIEMPRE actualiza
+            item[field] = baseValue
+        })
     })
-  })
 }
 </script>
 

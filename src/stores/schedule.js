@@ -259,6 +259,14 @@ async postLegalization(formData, id) {
       )
     },
 
+    async deleteSchedule(id) {
+      const { data, status } = await instance({
+        method: 'delete',
+        url: `/schedule/${id}`
+      })
+      return { data, status }
+    },
+
     async viewDocument(publicId) {
   try {
     const { data } = await instance.get(

@@ -2539,9 +2539,17 @@ watch(selectedAdminChart, async (val) => {
     }
 }
 
+/* Tarjetas en tablet */
+@media (max-width: 1024px) {
+    .card-container {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
 /* Tarjetas en móvil - 2 columnas */
 @media (max-width: 600px) {
     .card-container {
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 8px;
     }
 
@@ -2552,10 +2560,24 @@ watch(selectedAdminChart, async (val) => {
 
     .card-title {
         font-size: 0.78rem;
+        white-space: normal;
     }
 
     .card-subtitle {
         font-size: 0.67rem;
+        white-space: normal;
+    }
+
+    .icon-wrapper {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* Móviles muy pequeños - 1 columna */
+@media (max-width: 360px) {
+    .card-container {
+        grid-template-columns: repeat(1, 1fr) !important;
     }
 }
 
@@ -2740,6 +2762,24 @@ watch(selectedAdminChart, async (val) => {
         display: none;
     }
 
+    .analytics-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0;
+    }
+
+    .astat + .astat {
+        border-left: none;
+    }
+
+    .astat:nth-child(odd) {
+        border-right: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .astat:nth-child(n+3) {
+        border-top: 1px solid rgba(255,255,255,0.2);
+    }
+
     .astat-num {
         font-size: 1.4rem;
     }
@@ -2749,7 +2789,7 @@ watch(selectedAdminChart, async (val) => {
     }
 
     .astat {
-        padding: 12px 6px;
+        padding: 14px 8px;
     }
 }
 </style>
