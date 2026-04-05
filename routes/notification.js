@@ -8,5 +8,6 @@ routerNotification.get('/user/:userId', httpNotification.getByUser)
 routerNotification.put('/read/:id', httpNotification.markAsRead)
 routerNotification.put('/read-all/:userId', httpNotification.markAllAsRead)
 routerNotification.get('/unread/:userId', httpNotification.unreadCount)
+routerNotification.delete('/:id', httpNotification.deleteOne)
 
 export { routerNotification }
