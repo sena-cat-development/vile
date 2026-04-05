@@ -1189,6 +1189,26 @@ ioInstance.emit('agenda-legalizada', {
         }
     },
 
+    delete: async (req, res) => {
+        try {
+            const { id } = req.params
+
+            const deleted = await Schedule.findByIdAndDelete(id)
+
+            if (!deleted) {
+                return res.status(404).json({ ok: false, message: 'Agenda no encontrada' })
+            }
+
+            res.json({ ok: true, message: 'Agenda eliminada correctamente' })
+        } catch (error) {
+            res.status(500).json({
+                ok: false,
+                message: 'Error al eliminar la agenda',
+                error: error.message
+            })
+        }
+    },
+
     editRadication: async (req, res) => {
         try {
             const { scheduleId, radicationId } = req.params
