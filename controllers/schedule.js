@@ -561,7 +561,9 @@ const httpSchedule = {
             // PROCESAR COLLECTIONS DINÁMICAS
             // ================================
             if (req.body.collections) {
-                const collectionsFromFrontend = JSON.parse(req.body.collections);
+                const collectionsFromFrontend = typeof req.body.collections === 'string'
+                    ? JSON.parse(req.body.collections)
+                    : req.body.collections;
                 console.log('collectionsFromFrontend:', JSON.stringify(collectionsFromFrontend))
                 console.log('dynamicCollections:', JSON.stringify(dynamicCollections))
 
@@ -787,14 +789,14 @@ const httpSchedule = {
 
             // Mantener este evento (está bien)
             if (ioInstance) {
-ioInstance.emit('agenda-legalizada', {
-    scheduleId: id,
-    statusIndex: 4,
-    statusNumber: 3,
-    contractorId: schedule.contractor,
-    supervisorId: req.body.userId,
-    justification: schedule.status.justification
-});
+                ioInstance.emit('agenda-legalizada', {
+                    scheduleId: id,
+                    statusIndex: 4,
+                    statusNumber: 3,
+                    contractorId: schedule.contractor,
+                    supervisorId: req.body.userId,
+                    justification: schedule.status.justification
+                });
                 console.log('✅ Evento "legalizacion-rechazada" emitido');
             }
 
