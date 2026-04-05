@@ -16,8 +16,6 @@ import { routerInstitute } from './routes/institute.js'
 import { routerAmount } from './routes/Amount.js'
 import { routerNotification } from './routes/notification.js'
 
-import { setIo } from './socket.js'
-
 // 🔹 ESM: __dirname equivalente
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -32,8 +30,8 @@ class Server {
       cors: { origin: '*' }
     })
 
-    // Guardar instancia en singleton (sin exportar desde server.js)
-    setIo(this.io)
+    // Guardar instancia globalmente para usarla en controladores
+    global._io = this.io
 
     this.connect()
     this.middlewares()
