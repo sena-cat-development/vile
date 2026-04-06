@@ -12,6 +12,8 @@ import mongoose from 'mongoose'
 
 import { getIo } from '../socket.js'
 
+import { Notification } from '../models/notification.js'
+
 
 
 
@@ -66,6 +68,27 @@ const httpSchedule = {
                 if (!user.supervisor) {
                     console.log('⚠️ El contratista no tiene supervisor asignado, no se envía correo');
                     return res.status(200).json({ msg: 'Agenda creada' })
+                }
+
+                // 💾 Guardar notificación en BD para el supervisor
+                try {
+                    const now = new Date()
+                    const notif = await Notification.create({
+                        userId: user.supervisor._id,
+                        scheduleId: schedule._id,
+                        message: `El contratista ${user.name} ha creado una nueva agenda.`,
+                        date: now.toLocaleDateString(),
+                        time: now.toLocaleTimeString(),
+                        read: false,
+                        metadata: { type: 'nueva-agenda' }
+                    })
+                    const io = getIo()
+                    if (io) {
+                        io.to(String(user.supervisor._id)).emit('nueva-notificacion', { ...notif.toObject(), data: notif.metadata })
+                    }
+                    console.log('✅ Notificación guardada para supervisor')
+                } catch (notifError) {
+                    console.error('⚠️ Error al guardar notificación:', notifError.message)
                 }
 
                 const supervisorEmail = user.supervisor.mail;
