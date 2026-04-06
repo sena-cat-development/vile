@@ -10,6 +10,8 @@ import path from 'path'
 
 import mongoose from 'mongoose'
 
+import { getIo } from '../socket.js'
+
 
 
 
@@ -45,8 +47,8 @@ const httpSchedule = {
             }
 
             // 🔔 Emitir evento Socket.io a todos los clientes conectados
-            if (ioInstance) {
-                ioInstance.emit('nueva-solicitud', {
+            if (getIo()) {
+                getIo().emit('nueva-solicitud', {
                     scheduleId: schedule._id,
                     userName: user.name,
                     role: user.role.data,
@@ -244,8 +246,8 @@ const httpSchedule = {
         const schedule = await Schedule.findByIdAndUpdate(id, req.body, { new: true });
 
         // 🔔 Emitir evento de actualización de agenda
-        if (ioInstance) {
-            ioInstance.emit('agenda-modificada', {
+        if (getIo()) {
+            getIo().emit('agenda-modificada', {
                 scheduleId: schedule._id,
                 status: schedule.status.data,
                 updatedBy: req.body.userId
@@ -735,8 +737,8 @@ const httpSchedule = {
             });
 
             // ✅ CAMBIO AQUÍ - Evento para index 5
-            if (ioInstance) {
-                ioInstance.emit('agenda-legalizada', {
+            if (getIo()) {
+                getIo().emit('agenda-legalizada', {
                     scheduleId: id,
                     statusIndex: 5,
                     contractorId: schedule.contractor,
@@ -787,8 +789,8 @@ const httpSchedule = {
             });
 
             // Mantener este evento (está bien)
-            if (ioInstance) {
-                ioInstance.emit('agenda-legalizada', {
+            if (getIo()) {
+                getIo().emit('agenda-legalizada', {
                     scheduleId: id,
                     statusIndex: 4,
                     statusNumber: 3,
@@ -839,8 +841,8 @@ const httpSchedule = {
             });
 
             // ✅ CAMBIO AQUÍ - Evento para index 6
-            if (ioInstance) {
-                ioInstance.emit('agenda-legalizada', {
+            if (getIo()) {
+                getIo().emit('agenda-legalizada', {
                     scheduleId: id,
                     statusIndex: 6,
                     supervisorId: req.body.userId,
@@ -974,8 +976,8 @@ const httpSchedule = {
                 };
 
                 // 🔔 Emitir evento
-                if (ioInstance) {
-                    ioInstance.emit('agenda-firmada', {
+                if (getIo()) {
+                    getIo().emit('agenda-firmada', {
                         scheduleId: schedule._id,
                         statusIndex: 2,
                         supervisorId: userId,
@@ -994,8 +996,8 @@ const httpSchedule = {
                 };
 
                 // 🔔 Emitir evento
-                if (ioInstance) {
-                    ioInstance.emit('agenda-legalizada', {
+                if (getIo()) {
+                    getIo().emit('agenda-legalizada', {
                         scheduleId: schedule._id,
                         statusIndex: 5,
                         contractorId: schedule.contractor._id || schedule.contractor,
@@ -1015,8 +1017,8 @@ const httpSchedule = {
                 };
 
                 // 🔔 Emitir evento
-                if (ioInstance) {
-                    ioInstance.emit('agenda-legalizada', {
+                if (getIo()) {
+                    getIo().emit('agenda-legalizada', {
                         scheduleId: schedule._id,
                         statusIndex: 6,
                         supervisorId: userId,

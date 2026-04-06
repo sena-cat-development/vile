@@ -28,9 +28,13 @@ class Server {
 
     // 🔥 Crear servidor HTTP para socket.io
     this.httpServer = http.createServer(this.app)
-    this.io = new SocketServer(this.httpServer, {
-      cors: { origin: '*' }
-    })
+this.io = new SocketServer(this.httpServer, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  },
+  transports: ['websocket'], // 🔥 CLAVE
+})
 
     setIo(this.io)
     this.connect()
