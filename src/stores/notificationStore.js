@@ -9,7 +9,11 @@ import NotificationToast from '../components/NotificationToast.vue'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const toId = (v) => v ? String(v?._id ?? v?.id ?? v) : ''
-const socket = io(import.meta.env.VITE_API_URL, { autoConnect: false })
+const socket = io(import.meta.env.VITE_API_URL, {
+  autoConnect: false,
+  transports: ['websocket'], // 🔥 obligatorio en prod
+})
+
 let _listenersAttached = false
 
 // Mensajes por estado (statusIndex-statusNumber)

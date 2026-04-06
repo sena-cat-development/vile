@@ -670,7 +670,7 @@ const descargarPdfLimpio = async (agenda) => {
         }
 
         const comision = agenda.tripOrder || 'SIN_COM'
-        const cedula = agenda.contract?.cedula || agenda.contract?.contractorCedula || agenda.user?.cedula || 'SIN_CED'
+        const cedula = agenda.contract?.identification || agenda.contract?.cedula || agenda.contract?.contractorCedula || agenda.user?.cedula || 'SIN_CED'
 
         // — Archivo 1: Autorización de Pago (obligatorio) —
         const archivosAutorizacion = [...(docs.autorizacionPago || [])]

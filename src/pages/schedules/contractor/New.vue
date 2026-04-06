@@ -1965,6 +1965,7 @@ async function createSchedule() {
                 number: contract.value.number,
                 date: contract.value.date,
                 contractorName: contractor.value,
+                identification: currentUser.value.identification,
                 object: object.value,
                 regional: currentRegional.value.name,
                 institute: currentInstitute.value.name
