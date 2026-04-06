@@ -350,8 +350,18 @@ import LegalizationDetail from '../administrator/Preview.vue'
 import { PDFDocument } from 'pdf-lib'
 import * as XLSX from 'xlsx'
 import JSZip from 'jszip'
+import { LocalStorage } from 'quasar'
 
 const scheduleStore = useScheduleStore()
+
+const fetchWithAuth = async (url) => {
+    const token = LocalStorage.getItem('token')
+    const fullUrl = url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL}${url}`
+    const res = await fetch(fullUrl, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
+    if (!res.ok) throw new Error(`Error ${res.status} cargando ${fullUrl}`)
+    const blob = await res.blob()
+    return URL.createObjectURL(blob)
+}
 
 const agendaDocs = ref(null)
 const archivosDocs = ref([])
@@ -396,12 +406,12 @@ const abrirDialogRadicacion = (agenda) => {
 const pdfUrl = ref(null)
 const dialogDocs = ref(false)
 
-const verDocumentos = (agenda) => {
-
+const verDocumentos = async (agenda) => {
     agendaDocs.value = agenda
+    archivosDocs.value = []
+    dialogDocs.value = true
 
     const docs = agenda.legalization?.documents
-
     const archivos = [
         ...(docs?.autorizacionPago || []),
         ...(docs?.compromisoPresupuestal || []),
@@ -410,19 +420,17 @@ const verDocumentos = (agenda) => {
         ...(docs?.interveredal || [])
     ]
 
-    archivosDocs.value = archivos.map(doc => {
-
-        const url = doc.url.startsWith('http')
-            ? doc.url
-            : `${import.meta.env.VITE_API_URL}${doc.url}`
-
-        return {
-            ...doc,
-            url
-        }
-    })
-
-    dialogDocs.value = true
+    archivosDocs.value = await Promise.all(
+        archivos.map(async (doc) => {
+            try {
+                const blobUrl = await fetchWithAuth(doc.url)
+                return { ...doc, url: blobUrl }
+            } catch {
+                const url = doc.url.startsWith('http') ? doc.url : `${import.meta.env.VITE_API_URL}${doc.url}`
+                return { ...doc, url }
+            }
+        })
+    )
 }
 
 
@@ -728,6 +736,7 @@ const guardarRadicacion = async () => {
                 } else {
                     agendasUsuario.value[agendaIndex].radications.push({
                         radicationNumber: numeroRadicacion.value,
+                        status: 'RADICADO',
                         createdAt: new Date().toISOString()
                     })
                 }

@@ -315,11 +315,9 @@ async function convertirImagenABase64(url) {
         // Construir URL completa si es relativa
         // ✅ agregar blob: a la condición
         const fullUrl = (url.startsWith('http') || url.startsWith('blob:')) ? url : `${BASE_URL}${url}`
+        const token = $q.localStorage.getItem('token')
         const response = await fetch(fullUrl, {
-            headers: {
-                // Si tu backend requiere token
-                // 'Authorization': `Bearer ${$q.localStorage.getItem('token')}`
-            }
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         })
 
         if (!response.ok) {
