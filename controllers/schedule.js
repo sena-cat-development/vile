@@ -51,8 +51,8 @@ const httpSchedule = {
                 getIo().emit('nueva-solicitud', {
                     scheduleId: schedule._id,
                     userName: user.name,
-                    role: user.role.data,
-                    staffType: user.staffType.data
+                    role: user.role?.data,
+                    staffType: user.staffType?.data
                 })
                 console.log('✅ Evento "nueva-solicitud" emitido')
             }
@@ -60,8 +60,13 @@ const httpSchedule = {
             const link = process.env.CLIENT_URL
 
             // CONTRATISTA CREA AGENDA
-            if (user.role.data === "user" && user.staffType.data === "contractor") {
+            if (user.role?.data === "user" && user.staffType?.data === "contractor") {
                 // Obtener el correo del supervisor
+
+                if (!user.supervisor) {
+                    console.log('⚠️ El contratista no tiene supervisor asignado, no se envía correo');
+                    return res.status(200).json({ msg: 'Agenda creada' })
+                }
 
                 const supervisorEmail = user.supervisor.mail;
 
@@ -106,8 +111,8 @@ const httpSchedule = {
 
             return res.status(200).json({ msg: 'Agenda creada' })
         } catch (error) {
-            console.log(error);
-            res.status(500).json({ msg: "Error al crear la agenda" });
+            console.error('❌ Error en postSchedule:', error.message, error.stack);
+            res.status(500).json({ msg: "Error al crear la agenda", detail: error.message });
         }
 
     },
