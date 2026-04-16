@@ -754,16 +754,15 @@ const obtenerEstadoAgenda = (agenda) => {
 }
 
 const obtenerEstadoLegalizacion = (agenda) => {
+    const index = agenda?.status?.index
+    if (index === undefined || index === null || index < 2) return null
+
+    if (index >= 5) return 'aprobada'
+
     const estado = normalizar(agenda?.status?.data)
-    if (!estado) return null
+    if (estado?.includes('rechaz')) return 'rechazada'
 
-    if (estado.includes('agenda firmada por contratista')) return null
-
-    if (estado.includes('radic')) return 'aprobada'
-    if (estado.includes('legaliz') && estado.includes('contratista')) return 'pendiente'
-    if (estado.includes('rechaz')) return 'rechazada'
-
-    return null
+    return 'pendiente'
 }
 
 

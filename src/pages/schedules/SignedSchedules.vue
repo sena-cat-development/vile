@@ -298,7 +298,7 @@ function handleView(schedule) {
 // DESCARGAR DOCUMENTO FIRMADO (PDF MULTIPÁGINA)
 async function handleDownload(schedule) {
     try {
-        // 1. Mostrar preview oculto
+        // 1. Mostrar preview
         selectedRow.value = schedule
         showDialog.value = true
 
@@ -321,33 +321,58 @@ async function handleDownload(schedule) {
 
         const imgData = canvas.toDataURL('image/png')
 
-        // 5. Configuración PDF
+        // 5. Configuración PDF con márgenes
         const pdf = new jsPDF('p', 'mm', 'a4')
 
         const pageWidth = pdf.internal.pageSize.getWidth()
         const pageHeight = pdf.internal.pageSize.getHeight()
 
-        // Proporciones
-        const imgWidth = pageWidth
-        const imgHeight = (canvas.height * imgWidth) / canvas.width
+        const marginX = 12  // márgenes laterales (mm)
+        const marginY = 14  // márgenes superior e inferior (mm)
 
-        let heightLeft = imgHeight
-        let position = 0
+        const contentWidth = pageWidth - marginX * 2
+        const contentHeight = (canvas.height * contentWidth) / canvas.width
+
+        // Área útil por página
+        const usableHeight = pageHeight - marginY * 2
+
+        let heightLeft = contentHeight
+        let yOffset = marginY
 
         // 6. Primera página
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-        heightLeft -= pageHeight
+        pdf.addImage(imgData, 'PNG', marginX, yOffset, contentWidth, contentHeight)
+        heightLeft -= usableHeight
 
         // 7. Páginas adicionales
         while (heightLeft > 0) {
-            position -= pageHeight
+            yOffset = marginY - (contentHeight - heightLeft)
             pdf.addPage()
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-            heightLeft -= pageHeight
+            pdf.addImage(imgData, 'PNG', marginX, yOffset, contentWidth, contentHeight)
+            heightLeft -= usableHeight
         }
 
-        // 8. Descargar
-        pdf.save(`agenda-firmada-${schedule._id}.pdf`)
+        // 8. Nombre del archivo: días_mes_nombre
+        const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+        const start = schedule.tripStart ? new Date(schedule.tripStart) : null
+        const end = schedule.tripEnd ? new Date(schedule.tripEnd) : null
+        let days = ''
+        let mesNombre = ''
+        if (start && end) {
+            const daysList = []
+            const cur = new Date(start)
+            while (cur <= end) {
+                daysList.push(cur.getDate())
+                cur.setDate(cur.getDate() + 1)
+            }
+            days = daysList.join('-')
+            mesNombre = meses[start.getMonth()]
+        }
+        const personName = (schedule.contract?.contractorName || 'sin-nombre')
+            .trim()
+            .replace(/\s+/g, '_')
+        const fileName = `${days}_${mesNombre}_${personName}.pdf`
+
+        pdf.save(fileName)
     } catch (error) {
         console.error(error)
         showNotify('Error generando el PDF', 'negative')
