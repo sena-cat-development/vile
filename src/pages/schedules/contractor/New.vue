@@ -1418,12 +1418,22 @@ function showEdit(row) {
     place.value = row.place ? [{ data: row.place }] : []
     company.value = row.company
     companyContact.value = row.companyContact
+    isEditing.value = true
     tripStart.value = row.tripStart.slice(0, 10)
     tripEnd.value = row.tripEnd.slice(0, 10)
+    isEditing.value = false
     tripObjective.value = row.tripObjective
     duties.value = row.duties
-    observations.value = row.observations
+    observations.value = restoreObservations(row.observations)
     id.value = row._id
+
+    // Restaurar CDP seleccionado
+    const interObs = (row.observations || []).find(o => o.key === 'intermunicipal')
+    if (interObs?.cdp != null) {
+        cdp.selected = cdpOptions.value.find(o => o.amount === interObs.cdp) ?? null
+    } else {
+        cdp.selected = null
+    }
 
     console.log('🟢 ACTIVITIES ASIGNADAS:', JSON.stringify(activities.value, null, 2))
     console.log(activities.value, row)
@@ -1433,6 +1443,8 @@ function showEdit(row) {
 }
 
 async function cleanDialog() {
+    isEditing.value = false
+
     createdAt.value = ''
 
     status.value = null
@@ -1721,9 +1733,11 @@ const activities = ref([])
 
 const infoClassification = ref(null)
 
-
+const isEditing = ref(false)
 
 watch([tripStart, tripEnd], () => {
+    if (isEditing.value) return
+
     if (!tripStart.value || !tripEnd.value) {
         activities.value = []
         return
@@ -1802,6 +1816,22 @@ function defaultObservations() {
             fromApi: false
         }
     ]
+}
+
+// Combina los datos del servidor con los defaults para preservar campos
+// exclusivos del frontend (fromApi, type, text) que el servidor puede no devolver
+function restoreObservations(serverObs) {
+    const defaults = defaultObservations()
+    return defaults.map(def => {
+        const saved = (serverObs || []).find(o => o.key === def.key)
+        if (!saved) return def
+        return {
+            ...saved,
+            fromApi: def.fromApi,
+            type: def.type,
+            text: def.text
+        }
+    })
 }
 
 
@@ -2064,10 +2094,6 @@ async function updateSchedule() {
         showNotify('Seleccione la fecha de inicio del desplazamiento', 'negative')
     } else if (!tripEnd.value) {
         showNotify('Seleccione la fecha de fin del desplazamiento', 'negative')
-    } else if (tripStart.value < isoDate) {
-        showNotify('La fecha de inicio no puede ser anterior al día de hoy', 'negative')
-    } else if (tripEnd.value < isoDate) {
-        showNotify('La fecha de fin no puede ser anterior al día de hoy', 'negative')
     } else if (tripObjective.value === null || !tripObjective.value.trim()) {
         showNotify('Digite el objetivo del viaje/desplazamiento', 'negative')
     } else if (duties.value.length === 0) {
@@ -2094,7 +2120,8 @@ async function updateSchedule() {
             tripEnd: tripEnd.value,
             tripObjective: tripObjective.value,
             duties: duties.value,
-            activities: activities.value.map(a => ({ // ✅ Mapeo agregado
+            observations: observations.value,
+            activities: activities.value.map(a => ({
                 date: a.date,
                 items: a.items.map(i => ({
                     data: i.data,
