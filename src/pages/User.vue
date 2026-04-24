@@ -15,60 +15,24 @@
         <!-- Tarjeta principal con la tabla -->
         <q-card flat bordered class="table-card">
             <q-card-section class="q-pa-none">
-                <q-table
-                    :loading="cargando"
-                    :filter="filter"
-                    :columns="columns"
-                    :rows="rows"
-                    row-key="_id"
-                    flat
-                    :pagination="{ rowsPerPage: 10 }"
-                    class="users-table"
-                >
+                <q-table :loading="cargando" :filter="filter" :columns="columns" :rows="rows" row-key="_id" flat
+                    :pagination="{ rowsPerPage: 10 }" class="users-table">
                     <!-- Barra superior izquierda -->
                     <template v-slot:top-left>
                         <div class="row q-gutter-sm items-center q-pa-sm flex-wrap">
-                            <q-btn
-                                @click="showDialog = true; nuevo()"
-                                icon="add"
-                                color="primary"
-                                label="Nuevo Usuario"
-                                unelevated
-                                class="action-btn"
-                            />
+                            <q-btn @click="showDialog = true; nuevo()" icon="add" color="primary" label="Nuevo Usuario"
+                                unelevated class="action-btn" />
 
                             <q-separator vertical inset />
 
-                            <q-select
-                                v-model="selectedTemplate"
-                                :options="templateOptions"
-                                label="Plantilla"
-                                style="min-width: 180px"
-                                emit-value
-                                map-options
-                                dense
-                                outlined
-                                color="teal"
-                            />
+                            <q-select v-model="selectedTemplate" :options="templateOptions" label="Plantilla"
+                                style="min-width: 180px" emit-value map-options dense outlined color="teal" />
 
-                            <q-btn
-                                @click="downloadFile"
-                                icon="download"
-                                color="teal"
-                                label="Descargar"
-                                unelevated
-                                :disable="!selectedTemplate"
-                                class="action-btn"
-                            />
+                            <q-btn @click="downloadFile" icon="download" color="teal" label="Descargar" unelevated
+                                :disable="!selectedTemplate" class="action-btn" />
 
-                            <q-btn
-                                color="secondary"
-                                icon="upload"
-                                label="Importar Excel"
-                                unelevated
-                                @click="uploadExcelFile"
-                                class="action-btn"
-                            />
+                            <q-btn color="secondary" icon="upload" label="Importar Excel" unelevated
+                                @click="uploadExcelFile" class="action-btn" />
 
                             <input ref="excelInput" type="file" accept=".xlsx, .xls, .csv" style="display: none"
                                 @change="handleFileUpload" />
@@ -78,25 +42,14 @@
                     <!-- Barra superior derecha (buscador) -->
                     <template v-slot:top-right>
                         <div class="q-pa-sm">
-                            <q-input
-                                dense
-                                debounce="300"
-                                color="primary"
-                                v-model="filter"
-                                placeholder="Buscar usuario..."
-                                outlined
-                                style="min-width: 220px"
-                            >
+                            <q-input dense debounce="300" color="primary" v-model="filter"
+                                placeholder="Buscar usuario..." outlined style="min-width: 220px">
                                 <template v-slot:prepend>
                                     <q-icon name="search" color="grey-6" />
                                 </template>
                                 <template v-slot:append>
-                                    <q-icon
-                                        v-if="filter"
-                                        name="close"
-                                        class="cursor-pointer text-grey-6"
-                                        @click="filter = ''"
-                                    />
+                                    <q-icon v-if="filter" name="close" class="cursor-pointer text-grey-6"
+                                        @click="filter = ''" />
                                 </template>
                             </q-input>
                         </div>
@@ -105,11 +58,8 @@
                     <!-- Celda: Estado -->
                     <template v-slot:body-cell-estado="props">
                         <q-td :props="props">
-                            <q-badge
-                                :color="props.row.status === 1 ? 'positive' : 'negative'"
-                                :label="props.row.status === 1 ? 'Activo' : 'Inactivo'"
-                                class="status-badge"
-                            />
+                            <q-badge :color="props.row.status === 1 ? 'positive' : 'negative'"
+                                :label="props.row.status === 1 ? 'Activo' : 'Inactivo'" class="status-badge" />
                         </q-td>
                     </template>
 
@@ -117,35 +67,18 @@
                     <template v-slot:body-cell-opciones="props">
                         <q-td :props="props">
                             <div class="row no-wrap justify-center q-gutter-xs">
-                                <q-btn
-                                    flat round dense
-                                    icon="fa-solid fa-pen-to-square"
-                                    color="orange-7"
-                                    size="sm"
-                                    @click="abrirEditar(props.row)"
-                                >
+                                <q-btn flat round dense icon="fa-solid fa-pen-to-square" color="orange-7" size="sm"
+                                    @click="abrirEditar(props.row)">
                                     <q-tooltip>Editar Usuario</q-tooltip>
                                 </q-btn>
 
-                                <q-btn
-                                    v-if="props.row.status == 0"
-                                    flat round dense
-                                    icon="fa-solid fa-check"
-                                    color="positive"
-                                    size="sm"
-                                    @click="editarEstado(props.row)"
-                                >
+                                <q-btn v-if="props.row.status == 0" flat round dense icon="fa-solid fa-check"
+                                    color="positive" size="sm" @click="editarEstado(props.row)">
                                     <q-tooltip>Activar Usuario</q-tooltip>
                                 </q-btn>
 
-                                <q-btn
-                                    v-else
-                                    flat round dense
-                                    icon="fa-solid fa-ban"
-                                    color="negative"
-                                    size="sm"
-                                    @click="editarEstado(props.row)"
-                                >
+                                <q-btn v-else flat round dense icon="fa-solid fa-ban" color="negative" size="sm"
+                                    @click="editarEstado(props.row)">
                                     <q-tooltip>Desactivar Usuario</q-tooltip>
                                 </q-btn>
                             </div>
@@ -166,12 +99,8 @@
 
                 <!-- Encabezado del dialog -->
                 <q-card-section :class="['dialog-header row items-center', bd === 0 ? 'dialog-header--edit' : '']">
-                    <q-icon
-                        :name="bd === 0 ? 'fa-solid fa-user-pen' : 'fa-solid fa-user-plus'"
-                        size="22px"
-                        color="white"
-                        class="q-mr-sm"
-                    />
+                    <q-icon :name="bd === 0 ? 'fa-solid fa-user-pen' : 'fa-solid fa-user-plus'" size="22px"
+                        color="white" class="q-mr-sm" />
                     <span class="text-h6 text-white text-weight-medium">
                         {{ bd === 0 ? "Editar Usuario" : "Agregar Usuario" }}
                     </span>
@@ -193,7 +122,8 @@
                         </div>
 
                         <div v-if="role !== null && role.index == 3" class="col-12 col-sm-6">
-                            <q-select v-model="staffType" :options="staffOptions" filled stack-label label="Tipo Usuario" />
+                            <q-select v-model="staffType" :options="staffOptions" filled stack-label
+                                label="Tipo Usuario" />
                         </div>
 
                         <!-- Sección: Datos personales -->
@@ -237,31 +167,26 @@
 
                         <div v-if="role !== null && role.index == 3 && staffType !== null && staffType.index == 0"
                             class="col-12 col-sm-6">
-                            <q-input
-                                :model-value="formatMiles(budget)"
-                                @update:model-value="budget = parseMiles($event)"
-                                filled stack-label type="text" inputmode="numeric"
-                                label="Presupuesto asignado" prefix="$" />
+                            <q-input :model-value="formatMiles(budget)"
+                                @update:model-value="budget = parseMiles($event)" filled stack-label type="text"
+                                inputmode="numeric" label="Presupuesto asignado" prefix="$" />
                         </div>
 
                         <div class="col-12 col-sm-6">
-                            <q-input
-                                :model-value="formatMiles(dailyAllowance)"
-                                @update:model-value="dailyAllowance = parseMiles($event)"
-                                filled stack-label type="text" inputmode="numeric"
-                                label="Viático diario" prefix="$" />
+                            <q-input :model-value="formatMiles(dailyAllowance)"
+                                @update:model-value="dailyAllowance = parseMiles($event)" filled stack-label type="text"
+                                inputmode="numeric" label="Viático diario" prefix="$" />
                         </div>
 
                         <div v-if="staffType?.data === 'contractor'" class="col-12 col-sm-6">
-                            <q-input
-                                :model-value="formatMiles(monthlyFee)"
-                                @update:model-value="monthlyFee = parseMiles($event)"
-                                filled stack-label type="text" inputmode="numeric"
-                                label="Honorarios mensuales" prefix="$" />
+                            <q-input :model-value="formatMiles(monthlyFee)"
+                                @update:model-value="monthlyFee = parseMiles($event)" filled stack-label type="text"
+                                inputmode="numeric" label="Honorarios mensuales" prefix="$" />
                         </div>
 
                         <!-- Sección: Cargo / Dependencia -->
-                        <template v-if="role !== null && role.index !== 3 && role.index !== 1 || staffType !== null && staffType.index == 1 && role.index == 3">
+                        <template
+                            v-if="role !== null && role.index !== 3 && role.index !== 1 || staffType !== null && staffType.index == 1 && role.index == 3">
                             <div class="col-12 q-mt-sm">
                                 <div class="section-label q-mb-xs">Información laboral</div>
                             </div>
@@ -283,11 +208,13 @@
 
                             <div class="col-12 col-sm-6">
                                 <q-select v-model="regional" :options="regionalOptions" use-chips filled stack-label
-                                    label="Regional" @update:model-value="async function (value) { await getInstitute(value) }" />
+                                    label="Regional"
+                                    @update:model-value="async function (value) { await getInstitute(value) }" />
                             </div>
 
                             <div class="col-12 col-sm-6">
-                                <q-select v-model="institute" :options="instituteOptions" use-chips filled stack-label label="Centro" />
+                                <q-select v-model="institute" :options="instituteOptions" use-chips filled stack-label
+                                    label="Centro" />
                             </div>
 
                             <div class="col-12 col-sm-6">
@@ -295,11 +222,13 @@
                             </div>
 
                             <div class="col-12 col-sm-6">
-                                <q-input v-model="contractDate.start" filled stack-label label="Fecha inicio contrato" type="date" />
+                                <q-input v-model="contractDate.start" filled stack-label label="Fecha inicio contrato"
+                                    type="date" />
                             </div>
 
                             <div class="col-12 col-sm-6">
-                                <q-input v-model="contractDate.end" filled stack-label label="Fecha fin contrato" type="date" />
+                                <q-input v-model="contractDate.end" filled stack-label label="Fecha fin contrato"
+                                    type="date" />
                             </div>
 
                             <div class="col-12">
@@ -319,7 +248,8 @@
 
                         <!-- Ordenador -->
                         <template v-if="role !== null && role.index !== 2 && role.index !== 1">
-                            <div class="col-12 q-mt-sm" v-if="staffType === null || staffType.index !== 0 || role.index !== 3">
+                            <div class="col-12 q-mt-sm"
+                                v-if="staffType === null || staffType.index !== 0 || role.index !== 3">
                                 <div class="section-label q-mb-xs">Asignaciones</div>
                             </div>
                             <div v-if="paymasterOptions.length > 0" class="col-12 col-sm-6">
@@ -338,21 +268,9 @@
                 <q-separator />
 
                 <q-card-actions class="q-pa-md justify-end q-gutter-sm">
-                    <q-btn
-                        flat
-                        @click="showDialog = false"
-                        color="grey-7"
-                        label="Cancelar"
-                        icon="close"
-                    />
-                    <q-btn
-                        unelevated
-                        color="primary"
-                        :loading="loading"
-                        @click="bd === 0 ? editUser() : createUser()"
-                        label="Guardar cambios"
-                        icon="fa-solid fa-floppy-disk"
-                    />
+                    <q-btn flat @click="showDialog = false" color="grey-7" label="Cancelar" icon="close" />
+                    <q-btn unelevated color="primary" :loading="loading" @click="bd === 0 ? editUser() : createUser()"
+                        label="Guardar cambios" icon="fa-solid fa-floppy-disk" />
                 </q-card-actions>
             </q-card>
         </q-dialog>
@@ -1044,199 +962,199 @@ async function handleFileUpload(event) {
 
 // ─── HELPER: normalizar texto para comparación (quita tildes, espacios extra, minúsculas)
 function normalizar(str) {
-  return (str || '')
-    .toString()
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    return (str || '')
+        .toString()
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
 }
 
 // ─── HELPER: convertir fecha serial de XLSX.js a YYYY-MM-DD
 // XLSX.js convierte celdas de tipo fecha a número serial automáticamente
 function toISO(val) {
-  if (!val) return ''
-  if (typeof val === 'number') {
-    const d    = new Date(Math.round((val - 25569) * 86400 * 1000))
-    const yyyy = d.getUTCFullYear()
-    const mm   = String(d.getUTCMonth() + 1).padStart(2, '0')
-    const dd   = String(d.getUTCDate()).padStart(2, '0')
-    return `${yyyy}-${mm}-${dd}`
-  }
-  // Si viene como string DD-MM-AAAA → convertir a YYYY-MM-DD
-  const s     = val.toString().trim()
-  const parts = s.split('-')
-  if (parts.length === 3 && parts[2].length === 4) {
-    return `${parts[2]}-${parts[1]}-${parts[0]}`
-  }
-  return s
+    if (!val) return ''
+    if (typeof val === 'number') {
+        const d = new Date(Math.round((val - 25569) * 86400 * 1000))
+        const yyyy = d.getUTCFullYear()
+        const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+        const dd = String(d.getUTCDate()).padStart(2, '0')
+        return `${yyyy}-${mm}-${dd}`
+    }
+    // Si viene como string DD-MM-AAAA → convertir a YYYY-MM-DD
+    const s = val.toString().trim()
+    const parts = s.split('-')
+    if (parts.length === 3 && parts[2].length === 4) {
+        return `${parts[2]}-${parts[1]}-${parts[0]}`
+    }
+    return s
 }
 
 // ─── FUNCIÓN PRINCIPAL ────────────────────────────────────────────────────────
 async function createUsersFromExcel(users) {
-  if (!Array.isArray(users) || users.length === 0) {
-    showNotify('El archivo no contiene datos válidos', 'negative')
-    return
-  }
+    if (!Array.isArray(users) || users.length === 0) {
+        showNotify('El archivo no contiene datos válidos', 'negative')
+        return
+    }
 
-  loading.value = true
-  let successCount = 0
-  let hasErrors = false
-  const createdUserNames = []
+    loading.value = true
+    let successCount = 0
+    let hasErrors = false
+    const createdUserNames = []
 
-  for (const u of users) {
-    const currentUserName = u['Nombre']?.toString().trim() || 'Usuario Desconocido'
+    for (const u of users) {
+        const currentUserName = u['Nombre']?.toString().trim() || 'Usuario Desconocido'
 
-    try {
-      // ── 1. Buscar IDs por nombre (normalizado) en las listas cargadas ────────
+        try {
+            // ── 1. Buscar IDs por nombre (normalizado) en las listas cargadas ────────
 
-      const paymasterName  = u['Ordenador']?.toString().trim() || ''
-      const paymasterMatch = paymasterOptions.value.find(
-        p => normalizar(p.label) === normalizar(paymasterName)
-      )
-      const paymasterId = paymasterMatch?.id || null
+            const paymasterName = u['Ordenador']?.toString().trim() || ''
+            const paymasterMatch = paymasterOptions.value.find(
+                p => normalizar(p.label) === normalizar(paymasterName)
+            )
+            const paymasterId = paymasterMatch?.id || null
 
-      const supervisorName  = u['Supervisor']?.toString().trim() || ''
-      const supervisorMatch = supervisorOptions.value.find(
-        s => normalizar(s.label) === normalizar(supervisorName)
-      )
-      const supervisorId = supervisorMatch?.id || null
+            const supervisorName = u['Supervisor']?.toString().trim() || ''
+            const supervisorMatch = supervisorOptions.value.find(
+                s => normalizar(s.label) === normalizar(supervisorName)
+            )
+            const supervisorId = supervisorMatch?.id || null
 
-      const regionalName  = u['Regional']?.toString().trim() || ''
-      const regionalMatch = regionalOptions.value.find(
-        r => normalizar(r.label) === normalizar(regionalName)
-      )
-      const regionalId = regionalMatch?.data || null
+            const regionalName = u['Regional']?.toString().trim() || ''
+            const regionalMatch = regionalOptions.value.find(
+                r => normalizar(r.label) === normalizar(regionalName)
+            )
+            const regionalId = regionalMatch?.data || null
 
-      // Centro: buscar en los centros de la regional encontrada
-      let instituteId = null
-      if (regionalId) {
-        const { data: centros } = await scheduleStore.getInstitute(regionalId)
-        const centroName  = u['Centro']?.toString().trim() || ''
-        const centroMatch = centros.find(
-          c => normalizar(c.name) === normalizar(centroName)
-        )
-        instituteId = centroMatch?._id || null
-      }
+            // Centro: buscar en los centros de la regional encontrada
+            let instituteId = null
+            if (regionalId) {
+                const { data: centros } = await scheduleStore.getInstitute(regionalId)
+                const centroName = u['Centro']?.toString().trim() || ''
+                const centroMatch = centros.find(
+                    c => normalizar(c.name) === normalizar(centroName)
+                )
+                instituteId = centroMatch?._id || null
+            }
 
-      // ── 2. Fechas: XLSX.js convierte fechas a serial numérico ────────────────
-      const fechaInicio = toISO(u['Fecha Inicio Contrato'])
-      const fechaFin    = toISO(u['Fecha Fin Contrato'])
+            // ── 2. Fechas: XLSX.js convierte fechas a serial numérico ────────────────
+            const fechaInicio = toISO(u['Fecha Inicio Contrato'])
+            const fechaFin = toISO(u['Fecha Fin Contrato'])
 
-      // ── 3. Rol y tipo de usuario ─────────────────────────────────────────────
-      const rolLabel = u['Rol']?.toString().trim() || 'Usuario'
-      const rolMatch  = optionsRole.value.find(
-        r => normalizar(r.label) === normalizar(rolLabel)
-      ) || optionsRole.value[3]
+            // ── 3. Rol y tipo de usuario ─────────────────────────────────────────────
+            const rolLabel = u['Rol']?.toString().trim() || 'Usuario'
+            const rolMatch = optionsRole.value.find(
+                r => normalizar(r.label) === normalizar(rolLabel)
+            ) || optionsRole.value[3]
 
-      const tipoLabel = u['Tipo Uusario']?.toString().trim() || 'Contratista'
-      const tipoMatch  = staffOptions.value.find(
-        s => normalizar(s.label) === normalizar(tipoLabel)
-      ) || staffOptions.value[0]
+            const tipoLabel = u['Tipo Uusario']?.toString().trim() || 'Contratista'
+            const tipoMatch = staffOptions.value.find(
+                s => normalizar(s.label) === normalizar(tipoLabel)
+            ) || staffOptions.value[0]
 
-      // ── 4. Construir body ─────────────────────────────────────────────────────
-      const body = {
-        name:           currentUserName,
-        mail:           u['Correo Electronico']?.toString().trim() || '',
-        identification: u['No. De documento']?.toString().trim() || '',
-        password:       u['Contraseña']?.toString() || '123456',
-        role:           rolMatch,
-        staffType:      tipoMatch,
-        position:       u['Cargo']?.toString().trim() || '',
-        branch:         u['Dependencia']?.toString().trim() || '',
+            // ── 4. Construir body ─────────────────────────────────────────────────────
+            const body = {
+                name: currentUserName,
+                mail: u['Correo Electronico']?.toString().trim() || '',
+                identification: u['No. De documento']?.toString().trim() || '',
+                password: u['Contraseña']?.toString() || '123456',
+                role: rolMatch,
+                staffType: tipoMatch,
+                position: u['Cargo']?.toString().trim() || '',
+                branch: u['Dependencia']?.toString().trim() || '',
 
-        budget: {
-          amount: Number(u['Presupuesto']?.toString().replace(/[^\d.-]/g, '')) || 0
-        },
+                budget: {
+                    amount: Number(u['Presupuesto']?.toString().replace(/[^\d.-]/g, '')) || 0
+                },
 
-        dailyAllowance: {
-          amount: Number(u['Viático Diario']?.toString().replace(/[^\d.-]/g, '')) || 0
-        },
+                dailyAllowance: {
+                    amount: Number(u['Viático Diario']?.toString().replace(/[^\d.-]/g, '')) || 0
+                },
 
-        monthlyFee: {
-          amount: Number(u['Honorarios Mensuales']?.toString().replace(/[^\d.-]/g, '')) || 0
-        },
+                monthlyFee: {
+                    amount: Number(u['Honorarios Mensuales']?.toString().replace(/[^\d.-]/g, '')) || 0
+                },
 
-        contract: {
-          number: u['Número Contrato']?.toString().trim() || '',
-          date: {
-            start: fechaInicio,
-            end:   fechaFin
-          }
-        },
+                contract: {
+                    number: u['Número Contrato']?.toString().trim() || '',
+                    date: {
+                        start: fechaInicio,
+                        end: fechaFin
+                    }
+                },
 
-        object:     u['Objeto Contractual']?.toString().trim() || '',
-        regional:   regionalId,
-        institute:  instituteId,
-        supervisor: supervisorId,
-        paymaster:  paymasterId,
-      }
+                object: u['Objeto Contractual']?.toString().trim() || '',
+                regional: regionalId,
+                institute: instituteId,
+                supervisor: supervisorId,
+                paymaster: paymasterId,
+            }
 
-      // ── 5. Limpiar campos vacíos/null ─────────────────────────────────────────
-      const fieldsToClean = ['position', 'branch', 'regional', 'institute', 'supervisor', 'paymaster']
-      fieldsToClean.forEach(key => {
-        if (body[key] === '' || body[key] === null || body[key] === undefined) {
-          delete body[key]
+            // ── 5. Limpiar campos vacíos/null ─────────────────────────────────────────
+            const fieldsToClean = ['position', 'branch', 'regional', 'institute', 'supervisor', 'paymaster']
+            fieldsToClean.forEach(key => {
+                if (body[key] === '' || body[key] === null || body[key] === undefined) {
+                    delete body[key]
+                }
+            })
+
+            if (body.contract?.number === '') delete body.contract
+            if (body.object === '') delete body.object
+
+            // ── 6. Advertencias de referencias no encontradas ─────────────────────────
+            if (paymasterName && !paymasterId) {
+                showNotify(`⚠️ Ordenador no encontrado: "${paymasterName}" — usuario: ${currentUserName}`, 'warning')
+            }
+            if (supervisorName && !supervisorId) {
+                showNotify(`⚠️ Supervisor no encontrado: "${supervisorName}" — usuario: ${currentUserName}`, 'warning')
+            }
+            if (regionalName && !regionalId) {
+                showNotify(`⚠️ Regional no encontrada: "${regionalName}" — usuario: ${currentUserName}`, 'warning')
+            }
+            if (u['Centro'] && !instituteId) {
+                showNotify(`⚠️ Centro no encontrado: "${u['Centro']}" — usuario: ${currentUserName}`, 'warning')
+            }
+
+            // ── 7. Enviar al backend ──────────────────────────────────────────────────
+            const { data, status } = await userStore.postUser(body)
+
+            if (status === 200) {
+                successCount++
+                createdUserNames.push(currentUserName)
+            } else {
+                showNotify(`Error creando usuario ${currentUserName}: ${data.msg}`, 'negative')
+                hasErrors = true
+            }
+
+        } catch (err) {
+            console.error(err)
+            showNotify(`Error de red o desconocido al crear a ${currentUserName}.`, 'negative')
+            hasErrors = true
         }
-      })
-
-      if (body.contract?.number === '') delete body.contract
-      if (body.object === '') delete body.object
-
-      // ── 6. Advertencias de referencias no encontradas ─────────────────────────
-      if (paymasterName && !paymasterId) {
-        showNotify(`⚠️ Ordenador no encontrado: "${paymasterName}" — usuario: ${currentUserName}`, 'warning')
-      }
-      if (supervisorName && !supervisorId) {
-        showNotify(`⚠️ Supervisor no encontrado: "${supervisorName}" — usuario: ${currentUserName}`, 'warning')
-      }
-      if (regionalName && !regionalId) {
-        showNotify(`⚠️ Regional no encontrada: "${regionalName}" — usuario: ${currentUserName}`, 'warning')
-      }
-      if (u['Centro'] && !instituteId) {
-        showNotify(`⚠️ Centro no encontrado: "${u['Centro']}" — usuario: ${currentUserName}`, 'warning')
-      }
-
-      // ── 7. Enviar al backend ──────────────────────────────────────────────────
-      const { data, status } = await userStore.postUser(body)
-
-      if (status === 200) {
-        successCount++
-        createdUserNames.push(currentUserName)
-      } else {
-        showNotify(`Error creando usuario ${currentUserName}: ${data.msg}`, 'negative')
-        hasErrors = true
-      }
-
-    } catch (err) {
-      console.error(err)
-      showNotify(`Error de red o desconocido al crear a ${currentUserName}.`, 'negative')
-      hasErrors = true
     }
-  }
 
-  // ── 8. Refrescar tabla ────────────────────────────────────────────────────────
-  rows.value = await getUser()
-  rows.value.reverse()
-  loading.value = false
+    // ── 8. Refrescar tabla ────────────────────────────────────────────────────────
+    rows.value = await getUser()
+    rows.value.reverse()
+    loading.value = false
 
-  // ── 9. Notificación final ─────────────────────────────────────────────────────
-  const totalAttempts = users.length
-  const errorCount    = totalAttempts - successCount
+    // ── 9. Notificación final ─────────────────────────────────────────────────────
+    const totalAttempts = users.length
+    const errorCount = totalAttempts - successCount
 
-  if (successCount > 0) {
-    let msg = `✅ Se crearon ${successCount} de ${totalAttempts} usuarios.`
-    if (successCount <= 5) msg += ` Usuarios: ${createdUserNames.join(', ')}.`
-    else msg += ` Primeros: ${createdUserNames.slice(0, 3).join(', ')} y ${successCount - 3} más.`
-    showNotify(msg, 'positive', 'check_circle')
-    if (hasErrors) {
-      showNotify(`⚠️ ${errorCount} usuarios fallaron. Ver notificaciones para detalles.`, 'warning')
+    if (successCount > 0) {
+        let msg = `✅ Se crearon ${successCount} de ${totalAttempts} usuarios.`
+        if (successCount <= 5) msg += ` Usuarios: ${createdUserNames.join(', ')}.`
+        else msg += ` Primeros: ${createdUserNames.slice(0, 3).join(', ')} y ${successCount - 3} más.`
+        showNotify(msg, 'positive', 'check_circle')
+        if (hasErrors) {
+            showNotify(`⚠️ ${errorCount} usuarios fallaron. Ver notificaciones para detalles.`, 'warning')
+        }
+    } else if (hasErrors) {
+        showNotify('Proceso finalizado. Falló la creación de todos los usuarios.', 'negative')
+    } else {
+        showNotify('No se creó ningún usuario. El archivo estaba vacío o sin datos válidos.', 'warning')
     }
-  } else if (hasErrors) {
-    showNotify('Proceso finalizado. Falló la creación de todos los usuarios.', 'negative')
-  } else {
-    showNotify('No se creó ningún usuario. El archivo estaba vacío o sin datos válidos.', 'warning')
-  }
 }
 
 
