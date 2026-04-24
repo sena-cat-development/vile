@@ -51,25 +51,36 @@ const STATUS_RECIPIENTS = {
   '6-2': ({ contractorId }) => [contractorId],
 }
 
+// Categoría visual por statusKey (index-number)
+// 0-1 → rechazo por supervisor | 4-3 → rechazo de legalización
+// 1-1 → agenda firmada (pendiente supervisor) | 2-2 → aprobada por supervisor
+// 3-3 → legalización lista para revisar | 5-2 → legalización firmada por contratista
+// 6-2 → proceso completado
+const STATUS_KEY_PROCESS = {
+  '0-1': 'rechazado',
+  '4-3': 'rechazado',
+  '1-1': 'aprobacion',
+  '2-2': 'aprobacion',
+  '3-3': 'legalizacion',
+  '5-2': 'legalizacion',
+  '6-2': 'completado',
+}
+
 // Metadatos visuales por proceso
 const PROCESS_META = {
-  rechazado: { color: 'negative', icon: 'cancel' },
-  aprobacion: { color: 'orange', icon: 'rule' },
-  legalizacion: { color: 'purple', icon: 'gavel' },
-  completado: { color: 'positive', icon: 'verified' },
-  creacion: { color: 'blue', icon: 'add_task' },
-  sistema: { color: 'grey-7', icon: 'notifications' },
+  rechazado:    { color: 'negative', icon: 'cancel',   label: 'Rechazado' },
+  aprobacion:   { color: 'orange',   icon: 'rule',     label: 'Aprobación' },
+  legalizacion: { color: 'purple',   icon: 'gavel',    label: 'Legalización' },
+  completado:   { color: 'positive', icon: 'verified', label: 'Completado' },
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 export const useNotificationStore = defineStore('notifications', {
   state: () => ({
     notifications: [],
-    socket,
     unreadCount: 0,
     notificationsLoaded: false,
-    reminderInterval: null,
-    _adminCache: { ids: [], fetchedAt: null },
+    _nameCache: {},
   }),
 
   getters: {
@@ -92,11 +103,9 @@ export const useNotificationStore = defineStore('notifications', {
     async init(userId) {
       await this.loadNotifications(userId)
       this.initSocketListeners()
-      this._startReminder()
     },
 
     teardown() {
-      this._stopReminder()
       this._destroySocket()
       this.$reset()
     },
@@ -295,9 +304,12 @@ export const useNotificationStore = defineStore('notifications', {
     // ── Helpers internos ───────────────────────────────────────────────────
     async _getName(userId) {
       if (!userId) return 'Usuario'
+      if (this._nameCache[userId]) return this._nameCache[userId]
       try {
         const { data } = await useUserStore().getUserParams(userId)
-        return `${data?.name ?? ''} ${data?.lastName ?? ''}`.trim() || 'Usuario'
+        const name = `${data?.name ?? ''} ${data?.lastName ?? ''}`.trim() || 'Usuario'
+        this._nameCache[userId] = name
+        return name
       } catch {
         return 'Usuario'
       }
@@ -327,27 +339,6 @@ export const useNotificationStore = defineStore('notifications', {
       }
     },
 
-    async _getAdminIds() {
-      const { ids, fetchedAt } = this._adminCache
-      if (ids.length && fetchedAt && Date.now() - fetchedAt < 300_000) return ids
-
-      try {
-        const userStore = useUserStore()
-        const source = userStore.users?.length
-          ? userStore.users
-          : (await userStore.getUser({ status: 1 }))?.data ?? []
-
-        const admins = source
-          .filter(u => u.role?.data === 'administrator' && u.status === 1)
-          .map(u => u._id)
-
-        this._adminCache = { ids: admins, fetchedAt: Date.now() }
-        return admins
-      } catch {
-        return this._adminCache.ids
-      }
-    },
-
     // ── Socket ─────────────────────────────────────────────────────────────
     initSocketListeners() {
       if (_listenersAttached) return
@@ -374,34 +365,12 @@ export const useNotificationStore = defineStore('notifications', {
       _listenersAttached = false
     },
 
-    // ── Recordatorio ───────────────────────────────────────────────────────
-    _startReminder() {
-      // Recordatorio solo al iniciar sesión — ver _showLoginBanner
-    },
-
-    _stopReminder() {
-      clearInterval(this.reminderInterval)
-      this.reminderInterval = null
-    },
-
     // ── UI ─────────────────────────────────────────────────────────────────
     getNoteMeta(note) {
       const si = note.data?.statusIndex ?? -1
       const sn = note.data?.statusNumber ?? -1
-      const msg = (note.message || '').toLowerCase()
-
-      let process = 'sistema'
-      if ((si === 0 && sn === 1) || (si === 4 && sn === 3)) process = 'rechazado'
-      else if ((si === 1 && sn === 1) || (si === 2 && sn === 2)) process = 'aprobacion'
-      else if ((si === 3 && sn === 3) || (si === 5 && sn === 2)) process = 'legalizacion'
-      else if (si === 6 && sn === 2) process = 'completado'
-      else if (msg.includes('rechazad')) process = 'rechazado'
-      else if (msg.includes('cuenta de cobro')) process = 'completado'
-      else if (msg.includes('legalización')) process = 'legalizacion'
-      else if (msg.includes('aprobada') || msg.includes('firmada')) process = 'aprobacion'
-      else if (msg.includes('nueva agenda')) process = 'creacion'
-
-      return { ...(PROCESS_META[process] ?? PROCESS_META.sistema), process }
+      const process = STATUS_KEY_PROCESS[`${si}-${sn}`] ?? 'rechazado'
+      return { ...PROCESS_META[process], process }
     },
 
     showNotify(note) {
