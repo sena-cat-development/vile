@@ -185,6 +185,8 @@ export const useNotificationStore = defineStore('notifications', {
       const actorName = await this._getName(currentUserId)
       const supervisorName = scheduleInfo ? await this._getName(toId(scheduleInfo.supervisor)) : null
 
+      const justification = scheduleInfo?.status?.justification || null
+
       for (const recipientId of recipients) {
         const message = await this._buildMessage(statusKey, scheduleInfo, data, recipientId)
         await this._persist({
@@ -200,6 +202,7 @@ export const useNotificationStore = defineStore('notifications', {
             actorId: currentUserId,
             actorName,
             agendaName: scheduleInfo?.place || scheduleInfo?.tripObjective || null,
+            justification: justification !== '-' ? justification : null,
           },
         }, recipientId, currentUserId)
       }
@@ -369,8 +372,15 @@ export const useNotificationStore = defineStore('notifications', {
     getNoteMeta(note) {
       const si = note.data?.statusIndex ?? -1
       const sn = note.data?.statusNumber ?? -1
-      const process = STATUS_KEY_PROCESS[`${si}-${sn}`] ?? 'rechazado'
-      return { ...PROCESS_META[process], process }
+      const process = STATUS_KEY_PROCESS[`${si}-${sn}`]
+      if (process) return { ...PROCESS_META[process], process }
+
+      // Fallback para notificaciones antiguas sin statusIndex/statusNumber correcto
+      const msg = (note.message || '').toLowerCase()
+      if (msg.includes('rechazad')) return { ...PROCESS_META.rechazado, process: 'rechazado' }
+      if (msg.includes('cuenta de cobro') || msg.includes('completad')) return { ...PROCESS_META.completado, process: 'completado' }
+      if (msg.includes('legalización') || msg.includes('legalizacion')) return { ...PROCESS_META.legalizacion, process: 'legalizacion' }
+      return { ...PROCESS_META.aprobacion, process: 'aprobacion' }
     },
 
     showNotify(note) {

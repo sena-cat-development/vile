@@ -1435,7 +1435,7 @@ const conclusions = ref([{ data: '' }])
 function cargarDatosPrevios(scheduleRow) {
     // Para funcionario: tomar firma directamente de la agenda
     if (currentUser.value?.staffType?.data !== 'contractor') {
-        const firmaAgenda = scheduleRow.signature?.publicWorker
+        const firmaAgenda = scheduleRow.legalization?.signature?.publicWorker
         if (firmaAgenda) {
             sign.value.publicWorker = firmaAgenda
             yaFirmo.value = true
@@ -1471,6 +1471,15 @@ function cargarDatosPrevios(scheduleRow) {
             asistenciaFormacion: docs.asistenciaFormacion || null,
             interveredal: docs.interveredal || null,
             tiquetes: Array.isArray(docs.tiquetes) ? docs.tiquetes : []
+        }
+
+        // Para contratistas: cargar firma previa si existe; si no, habilitar re-envío igualmente
+        if (currentUser.value?.staffType?.data === 'contractor') {
+            const prevSignature = scheduleRow.legalization?.signature?.contractor
+            if (prevSignature) {
+                sign.value.contractor = prevSignature
+            }
+            yaFirmo.value = true
         }
     }
 }
