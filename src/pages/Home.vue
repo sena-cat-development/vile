@@ -566,7 +566,7 @@ const getRoleLabel = (user) => {
     const staff = user.staffType?.data || ''
     const rolData = user.role?.data || user.role || ''
     if (staff === 'contractor') return 'Contratista'
-    if (staff === 'official') return 'Funcionario'
+    if (staff === 'official' || staff === 'publicWorker') return 'Funcionario'
     return ROLE_LABELS[rolData] || rolData || 'Sin rol'
 }
 
