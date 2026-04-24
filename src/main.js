@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { Quasar, Notify, LocalStorage } from 'quasar'
+import { Quasar, Notify, LocalStorage, Dialog } from 'quasar'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 
@@ -25,7 +25,8 @@ const pinia = createPinia()
 app.use(Quasar, {
     plugins: {
         Notify,
-        LocalStorage
+        LocalStorage,
+        Dialog
     }, lang: quasarLang,
 })
 
