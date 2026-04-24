@@ -272,6 +272,11 @@
                         <div class="astat-num">{{ statsUsuarios.contratistas }}</div>
                         <div class="astat-lbl">Contratistas</div>
                     </div>
+                    <div class="astat astat-orange">
+                        <q-icon name="work" size="26px" />
+                        <div class="astat-num">{{ statsUsuarios.funcionarios }}</div>
+                        <div class="astat-lbl">Funcionarios</div>
+                    </div>
                 </div>
 
                 <!-- Área de gráfica -->
@@ -559,6 +564,9 @@ const statsUsuarios = computed(() => {
         contratistas: users.filter(u =>
             u.staffType?.data === 'contractor' || u.role?.data === 'contractor'
         ).length,
+        funcionarios: users.filter(u =>
+            u.staffType?.data === 'publicWorker' || u.staffType?.data === 'official'
+        ).length,
     }
 })
 
@@ -598,7 +606,14 @@ const crearGraficaRolesAdmin = () => {
 
     const labels = Object.keys(roleCount)
     const counts = Object.values(roleCount)
-    const colors = ['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4']
+    const ROLE_COLORS = {
+        'Administrador': '#3b82f6',
+        'Supervisor':    '#22c55e',
+        'Ordenador':     '#8b5cf6',
+        'Contratista':   '#f59e0b',
+        'Funcionario':   '#f97316',
+    }
+    const colors = labels.map((l, i) => ROLE_COLORS[l] || ['#06b6d4', '#ec4899', '#84cc16'][i % 3])
 
     rolesAdminChart = new Chart(canvas.getContext('2d'), {
         type: 'doughnut',
@@ -606,7 +621,7 @@ const crearGraficaRolesAdmin = () => {
             labels,
             datasets: [{
                 data: counts,
-                backgroundColor: colors.slice(0, labels.length),
+                backgroundColor: colors,
                 borderWidth: 2,
                 borderColor: '#fff'
             }]
