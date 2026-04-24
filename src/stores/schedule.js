@@ -129,6 +129,16 @@ async postLegalization(formData, id) {
         url: `/schedule/legalization/${id}`,
         data
       })
+
+      if (data.status && id) {
+        try {
+          const { useNotificationStore } = await import('./notificationStore.js')
+          await useNotificationStore().addNotification('schedule', { scheduleId: id })
+        } catch (e) {
+          console.warn('[Notif] Error al crear notificación de legalización:', e)
+        }
+      }
+
       return { status }
     },
 

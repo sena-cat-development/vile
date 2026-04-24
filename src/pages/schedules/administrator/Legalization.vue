@@ -571,7 +571,7 @@
                     <q-card-actions class="justify-around">
                         <q-btn @click="cleanDialog(); yaFirmo = false" :disable="loading" label="Cerrar"
                             icon="fa-solid fa-xmark" color="negative" />
-                        <q-btn @click="postLegalization()" icon="fa-solid fa-floppy-disk" :loading="loading"
+                        <q-btn @click="confirmarGuardar()" icon="fa-solid fa-floppy-disk" :loading="loading"
                             :disable="yaFirmo === false" label="Guardar" class="bg-primary text-white" />
                     </q-card-actions>
                 </q-card>
@@ -1157,6 +1157,18 @@ function validarFormulario() {
     }
 
     return true
+}
+
+function confirmarGuardar() {
+    $q.dialog({
+        title: 'Confirmar guardado',
+        message: '¿Está seguro que desea guardar la legalización?',
+        cancel: { label: 'Cancelar', color: 'negative', flat: true },
+        ok: { label: 'Guardar', color: 'primary' },
+        persistent: true
+    }).onOk(() => {
+        postLegalization()
+    })
 }
 
 async function postLegalization() {
