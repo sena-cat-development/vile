@@ -1118,7 +1118,7 @@ let loading = ref(false)
 
 const fechaActual = new Date()
 
-const isoDate = fechaActual.toISOString().split('T')[0];
+const isoDate = `${fechaActual.getFullYear()}-${String(fechaActual.getMonth() + 1).padStart(2, '0')}-${String(fechaActual.getDate()).padStart(2, '0')}`
 
 const invoice = ref(null)
 
@@ -1857,15 +1857,9 @@ function onSignFileChange(event) {
 }
 
 
-function formatDateDMY(date) {
-    if (!date) return ''
-
-    const d = new Date(date)
-
-    const day = String(d.getDate()).padStart(2, '0')
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const year = d.getFullYear()
-
+function formatDateDMY(dateStr) {
+    if (!dateStr) return ''
+    const [year, month, day] = dateStr.split('-')
     return `${day}/${month}/${year}`
 }
 

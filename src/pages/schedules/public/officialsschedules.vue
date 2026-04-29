@@ -90,8 +90,8 @@ const previewComponent = computed(() => {
 
 const columns = [
     { name: 'place', label: 'Lugar', field: row => row.places?.[0]?.data ?? row.place ?? '', align: 'center' },
-    { name: 'tripStart', label: 'Inicio', field: row => new Date(row.tripStart).toLocaleDateString('es-CO'), align: 'center' },
-    { name: 'tripEnd', label: 'Fin', field: row => new Date(row.tripEnd).toLocaleDateString('es-CO'), align: 'center' },
+    { name: 'tripStart', label: 'Inicio', field: row => { const [y, m, d] = (row.tripStart || '').slice(0, 10).split('-'); return `${d}/${m}/${y}` }, align: 'center' },
+    { name: 'tripEnd', label: 'Fin', field: row => { const [y, m, d] = (row.tripEnd || '').slice(0, 10).split('-'); return `${d}/${m}/${y}` }, align: 'center' },
     { name: 'status', label: 'Estado', field: 'status', align: 'center' },
     { name: 'actions', label: 'Acciones', align: 'center' }
 ]

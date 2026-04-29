@@ -29,11 +29,11 @@
     flex-direction: column;
   ">
         <div style="border-bottom: 1px solid black; padding: 4px; text-align: center;">
-          <p class="q-my-none" style="font-size: 10px;">Versión: 05</p>
+          <p class="q-my-none" style="font-size: 10px;">Versión: 01</p>
         </div>
         <div style="padding: 4px; text-align: center;">
           <p class="q-my-none" style="font-size: 10px;">
-            Código:<br />GTH-F-090
+            Código:<br />GCCON-F-095
           </p>
         </div>
       </div>
@@ -46,7 +46,7 @@
       <p class="q-my-none" style="font-size: 11px; font-weight: bold;">PROCESO</p>
     </div>
     <div style="text-align: center; padding: 5px 0; border-bottom: 1px solid black;">
-      <p class="q-my-none" style="font-size: 11px; font-weight: bold;">GESTIÓN DE TALENTO HUMANO</p>
+      <p class="q-my-none" style="font-size: 11px; font-weight: bold;">GESTIÓN CONTRACTUAL</p>
     </div>
 
     <!-- NOMBRE DEL FORMATO -->
@@ -503,7 +503,7 @@
             </div>
             <div style="flex: 1; padding: 3px 6px; display: flex; align-items: center; justify-content: center;">
               <span v-if="returnRoute && returnRoute.length">{{returnRoute.map(r => r.label || r.data).join(' - ')
-                }}</span>
+              }}</span>
               <span v-else>-</span>
             </div>
           </div>
