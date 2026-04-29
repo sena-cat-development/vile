@@ -159,6 +159,31 @@
               </div>
             </div>
 
+            <!-- CDP -->
+            <div class="q-mb-md">
+              <div class="text-subtitle1 q-mb-sm">CDP</div>
+              <q-select v-model="cdp.selected" :options="cdpOptions" option-label="name" outlined label="CDP"
+                clearable>
+                <template #option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section>
+                      <q-item-label class="text-weight-bold">{{ scope.opt.code }} {{ scope.opt.name }}</q-item-label>
+                      <q-item-label caption class="text-primary">🏛 Dependencia: {{ scope.opt.dependency }}</q-item-label>
+                      <q-item-label caption>#️⃣ Codigo: {{ scope.opt.amount }}</q-item-label>
+                      <q-item-label caption v-if="scope.opt.description">📄 {{ scope.opt.description }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
+                <template #selected-item="scope">
+                  <div class="column">
+                    <span class="text-weight-bold">{{ scope.opt.code }} - {{ scope.opt.name }}</span>
+                    <span class="text-caption">🏛 {{ scope.opt.dependency }}</span>
+                    <span class="text-caption text-grey">{{ scope.opt.amount }}</span>
+                  </div>
+                </template>
+              </q-select>
+            </div>
+
             <!-- OBSERVACIONES -->
             <div class="q-mb-md">
               <div class="text-subtitle1 q-mb-sm">Observaciones / Gastos</div>
@@ -215,14 +240,22 @@
 </template>
 
 <script setup>
-import { ref, onBeforeMount, watch, nextTick } from 'vue'
+import { ref, reactive, computed, onBeforeMount, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import { useScheduleStore } from '../../../stores/schedule'
 import Preview from '../contractor/Preview.vue'
 import { useMoneyStore } from '../../../stores/money.js'
+import { useAmountStore } from '../../../stores/Amount.js'
 
 const moneyStore = useMoneyStore()
+const amountStore = useAmountStore()
+
+const cdp = reactive({ selected: null })
+
+const cdpOptions = computed(() =>
+  amountStore.amounts.filter(a => a.type === 'cdp')
+)
 
 
 const route = useRoute()
@@ -339,7 +372,7 @@ const loadCities = async (countyIds, index, type) => {
 
 /* CARGAR AGENDA */
 onBeforeMount(async () => {
-  await loadCounties()
+  await Promise.all([loadCounties(), amountStore.fetchAmounts()])
 
   try {
     console.log('ID recibido:', route.params.id)
@@ -510,9 +543,19 @@ onBeforeMount(async () => {
         key: obs.key || '',
         text: obs.text || '',
         amount: obs.amount || 0,
+        cdp: obs.cdp ?? undefined,
+        cdpName: obs.cdpName ?? undefined,
         _id: obs._id
       }))
       : []
+
+    /* RESTAURAR CDP */
+    const interObs = (s.observations || []).find(o => o.key === 'intermunicipal')
+    if (interObs?.cdp != null) {
+      cdp.selected = cdpOptions.value.find(o => o.amount === interObs.cdp) ?? null
+    } else {
+      cdp.selected = null
+    }
 
     /* 1️⃣3️⃣ RESULTADOS Y CONCLUSIONES */
     results.value = Array.isArray(s.results) ? [...s.results] : []
@@ -808,6 +851,21 @@ function onCountyChange(val, index, type) {
 
 
 
+
+watch(
+  () => cdp.selected,
+  (val) => {
+    const inter = observations.value.find(o => o.key === 'intermunicipal')
+    if (!inter) return
+    if (val) {
+      inter.cdp = val.amount
+      inter.cdpName = val.name
+    } else {
+      inter.cdp = undefined
+      inter.cdpName = undefined
+    }
+  }
+)
 
 watch([tripStart, tripEnd], ([newStart, newEnd]) => {
   if (!newStart || !newEnd) return
