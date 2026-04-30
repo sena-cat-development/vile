@@ -262,6 +262,25 @@
                             </div>
                         </template>
 
+                        <!-- Firma (solo al editar y si existe) -->
+                        <template v-if="bd === 0 && sign">
+                            <div class="col-12 q-mt-sm">
+                                <div class="section-label q-mb-xs">Firma</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="firma-container">
+                                    <q-img :src="sign.url" fit="contain" style="width: 280px; height: 140px;">
+                                        <template v-slot:error>
+                                            <div class="absolute-full flex flex-center text-grey-5"
+                                                style="background-color: #f5f5f5;">
+                                                Sin firma
+                                            </div>
+                                        </template>
+                                    </q-img>
+                                </div>
+                            </div>
+                        </template>
+
                     </div>
                 </q-card-section>
 
@@ -434,6 +453,8 @@ async function cleanDialog() {
     budget.value = 0
 
     monthlyFee.value = 0
+
+    sign.value = null
 
     rows.value = await getUser()
 
@@ -656,6 +677,7 @@ function abrirEditar(data) {
     bd.value = 0
     id.value = data._id
     name.value = data.name
+    sign.value = data.sign?.url ? { url: `http://localhost:3000${data.sign.url}` } : null
     mail.value = data.mail
     identification.value = data.identification
     role.value = optionsRole.value[data.role.index]
@@ -923,6 +945,8 @@ const supervisorOptions = ref([])
 const paymaster = ref(null)
 
 const paymasterOptions = ref([])
+
+const sign = ref(null)
 
 
 const excelInput = ref(null)
@@ -1242,5 +1266,13 @@ async function createUsersFromExcel(users) {
     color: #6b7280;
     border-bottom: 1px solid #e5e7eb;
     padding-bottom: 4px;
+}
+
+.firma-container {
+    background-color: #f5f5f5;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px;
+    display: inline-block;
 }
 </style>

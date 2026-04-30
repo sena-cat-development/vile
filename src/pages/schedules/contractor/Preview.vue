@@ -478,8 +478,8 @@
                 <div
                   style="flex: 0 0 13%; border-right: 1px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3px; font-weight: bold; line-height: 1.3; min-height: 22px;">
                   <template v-if="item.startTime || item.endTime">
-                    <span> HORA:{{ item.startTime || '--:--' }} <small>AM</small></span>
-                    <span v-if="item.endTime">a {{ item.endTime }} <small>PM</small></span>
+                    <span> HORA:{{ formatTime12h(item.startTime) }}</span>
+                    <span v-if="item.endTime">a {{ formatTime12h(item.endTime) }}</span>
                   </template>
                   <template v-else>
                     <span>--:--</span>
@@ -640,6 +640,14 @@ import { useUserStore } from '../../../stores/user.js'
 
 const $q = useQuasar()
 const userStore = useUserStore()
+
+const formatTime12h = (time) => {
+  if (!time) return '--:--'
+  const [hours, minutes] = time.split(':')
+  const h = parseInt(hours, 10)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  return `${hours}:${minutes} ${ampm}`
+}
 
 // En un computed o cuando cargues los datos
 const getFullUrl = (path) => {
