@@ -645,7 +645,9 @@ import { useUserStore } from '../../../stores/user.js'
 const $q = useQuasar()
 const userStore = useUserStore()
 const formatMilitary = (time) => {
-  return time || '--:--'
+  if (!time) return '--:--'
+  // Strip any AM/PM suffix that may be stored in old data
+  return time.replace(/\s*(AM|PM)$/i, '').trim()
 }
 
 // En un computed o cuando cargues los datos

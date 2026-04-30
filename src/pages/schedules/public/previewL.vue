@@ -656,23 +656,9 @@ onBeforeMount(async () => {
     console.log('🏁 ===== FIN onBeforeMount =====\n')
 })
 
-// Dentro de <script setup> (después de 'const legalization = ref(...)')
-
-// Función para convertir hora militar (HH:MM) a 12h (HH:MM AM/PM)
 const formatTime12h = (time) => {
   if (!time) return '--:--'
-
-  const [hours, minutes] = time.split(':')
-  let h = parseInt(hours, 10)
-  let ampm = 'AM'
-
-  if (h >= 12) {
-    ampm = 'PM'
-    if (h > 12) h -= 12
-  }
-  if (h === 0) h = 12
-
-  return `${h}:${minutes} ${ampm}`
+  return time.replace(/\s*(AM|PM)$/i, '').trim()
 }
 
 

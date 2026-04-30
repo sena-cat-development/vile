@@ -655,7 +655,8 @@ onBeforeMount(async () => {
 // Dentro de <script setup> (después de 'const legalization = ref(...)')
 
 const formatTime12h = (time) => {
-  return time || '--:--'
+  if (!time) return '--:--'
+  return time.replace(/\s*(AM|PM)$/i, '').trim()
 }
 
 
