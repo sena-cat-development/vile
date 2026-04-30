@@ -478,8 +478,8 @@
                 <div
                   style="flex: 0 0 13%; border-right: 1px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3px; font-weight: bold; line-height: 1.3; min-height: 22px;">
                   <template v-if="item.startTime || item.endTime">
-                    <span> HORA:{{ formatTime12h(item.startTime) }}</span>
-                    <span v-if="item.endTime">a {{ formatTime12h(item.endTime) }}</span>
+                    <span> HORA:{{ item.startTime || '--:--' }} {{ item.startPeriod || '' }}</span>
+                    <span v-if="item.endTime">a {{ item.endTime }} {{ item.endPeriod || '' }}</span>
                   </template>
                   <template v-else>
                     <span>--:--</span>
@@ -641,14 +641,6 @@ import { useUserStore } from '../../../stores/user.js'
 const $q = useQuasar()
 const userStore = useUserStore()
 
-const formatTime12h = (time) => {
-  if (!time) return '--:--'
-  const [hours, minutes] = time.split(':')
-  const h = parseInt(hours, 10)
-  const ampm = h >= 12 ? 'PM' : 'AM'
-  return `${hours}:${minutes} ${ampm}`
-}
-
 // En un computed o cuando cargues los datos
 const getFullUrl = (path) => {
   if (!path) return null;
@@ -783,7 +775,7 @@ const tripEnd = ref('')
 const tripObjective = ref(null)
 const duties = ref([])
 const observations = ref([{ data: '' }])
-const activities = ref([{ date: '', items: [{ data: '', startTime: '', endTime: '' }] }])
+const activities = ref([{ date: '', items: [{ data: '', startTime: '', endTime: '', startPeriod: 'AM', endPeriod: 'AM' }] }])
 const sign = ref({})
 const goRoute = ref([])
 const returnRoute = ref([])

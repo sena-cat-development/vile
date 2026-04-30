@@ -94,6 +94,10 @@
                                     Ver
                                 </q-tooltip>
                             </q-icon>
+                            <q-btn v-if="props.row.status?.index === 1" icon="delete" color="negative" round dense flat
+                                size="sm" class="q-ml-sm" @click="confirmDelete(props.row)">
+                                <q-tooltip>Eliminar agenda</q-tooltip>
+                            </q-btn>
                         </q-td>
                     </template>
 
@@ -832,7 +836,7 @@
                                                     </div>
 
                                                     <!-- Hora Inicio -->
-                                                    <div class="col-3">
+                                                    <div class="col-2">
                                                         <q-input v-model="item.startTime" type="time"
                                                             label="Hora inicio" filled stack-label class="text-body1"
                                                             @update:model-value="val => {
@@ -840,14 +844,22 @@
                                                                 if (index === 0 && itemIndex === 0) syncHoursAllDays('startTime')
                                                             }" />
                                                     </div>
+                                                    <div class="col-1 flex items-center justify-center q-pt-sm">
+                                                        <q-btn-toggle v-model="item.startPeriod" toggle-color="primary"
+                                                            size="xs" :options="[{ label: 'AM', value: 'AM' }, { label: 'PM', value: 'PM' }]" />
+                                                    </div>
 
                                                     <!-- Hora Fin -->
-                                                    <div class="col-3">
+                                                    <div class="col-2">
                                                         <q-input v-model="item.endTime" type="time" label="Hora fin"
                                                             filled stack-label class="text-body1" @update:model-value="val => {
                                                                 item.endTime = val || null
                                                                 if (index === 0 && itemIndex === 0) syncHoursAllDays('endTime')
                                                             }" />
+                                                    </div>
+                                                    <div class="col-1 flex items-center justify-center q-pt-sm">
+                                                        <q-btn-toggle v-model="item.endPeriod" toggle-color="primary"
+                                                            size="xs" :options="[{ label: 'AM', value: 'AM' }, { label: 'PM', value: 'PM' }]" />
                                                     </div>
 
 
@@ -864,7 +876,7 @@
                                         <!-- Botón Agregar actividad -->
                                         <div class="col-12 justify-end flex">
                                             <q-btn :disable="activities.length === 0 || activities[0].date === ''"
-                                                @click="element.items.push({ data: '', startTime: '', endTime: '' })"
+                                                @click="element.items.push({ data: '', startTime: '', endTime: '', startPeriod: 'AM', endPeriod: 'AM' })"
                                                 icon="add" round color="primary" class="text-white q-mr-sm" />
                                         </div>
                                     </div>
@@ -1395,13 +1407,15 @@ function showEdit(row) {
             items: (activity.items || []).map(item => ({
                 data: item.data || '',
                 startTime: item.startTime || '',
-                endTime: item.endTime || ''
+                endTime: item.endTime || '',
+                startPeriod: item.startPeriod || 'AM',
+                endPeriod: item.endPeriod || 'AM'
             }))
         }))
     } else {
         activities.value = [{
             date: '',
-            items: [{ data: '', startTime: '', endTime: '' }]
+            items: [{ data: '', startTime: '', endTime: '', startPeriod: 'AM', endPeriod: 'AM' }]
         }]
     }
 
@@ -1481,7 +1495,7 @@ async function cleanDialog() {
 
     activities.value = [{
         date: '',
-        items: [{ data: '', startTime: '', endTime: '' }]
+        items: [{ data: '', startTime: '', endTime: '', startPeriod: 'AM', endPeriod: 'AM' }]
     }]
 
     rows.value = await getSchedule(currentUser.value._id, { contractor: true })
@@ -1770,7 +1784,7 @@ watch([tripStart, tripEnd], () => {
         activities.value.push(
             oldDay || {
                 date: dateStr,
-                items: [{ data: '', startTime: '', endTime: '' }]
+                items: [{ data: '', startTime: '', endTime: '', startPeriod: 'AM', endPeriod: 'AM' }]
             }
         )
     }
@@ -2023,7 +2037,9 @@ async function createSchedule() {
                 items: a.items.map(i => ({
                     data: i.data,
                     startTime: i.startTime || null,
-                    endTime: i.endTime || null
+                    endTime: i.endTime || null,
+                    startPeriod: i.startPeriod || 'AM',
+                    endPeriod: i.endPeriod || 'AM'
                 }))
             })),
 
@@ -2120,7 +2136,9 @@ async function updateSchedule() {
                 items: a.items.map(i => ({
                     data: i.data,
                     startTime: i.startTime || null,
-                    endTime: i.endTime || null
+                    endTime: i.endTime || null,
+                    startPeriod: i.startPeriod || 'AM',
+                    endPeriod: i.endPeriod || 'AM'
                 }))
             })),
             signature: {
@@ -2144,6 +2162,24 @@ async function updateSchedule() {
     loading.value = false
 
 }
+async function confirmDelete(row) {
+    $q.dialog({
+        title: 'Eliminar agenda',
+        message: '¿Está seguro de que desea eliminar esta agenda? Esta acción no se puede deshacer.',
+        ok: { label: 'Eliminar', color: 'negative', icon: 'delete' },
+        cancel: { label: 'Cancelar', color: 'primary', flat: true },
+        persistent: true
+    }).onOk(async () => {
+        const { status } = await scheduleStore.deleteSchedule(row._id)
+        if (status === 200) {
+            showNotify('Agenda eliminada exitosamente', 'positive', 'check_circle')
+            rows.value = await getSchedule(currentUser.value._id, { contractor: true })
+        } else {
+            showNotify('Error al eliminar la agenda', 'negative')
+        }
+    })
+}
+
 function syncHoursAllDays(field) {
     if (!activities.value.length) return
 

@@ -23,6 +23,10 @@
                         <q-btn v-if="props.row.typeSchedule !== 'contractor'" icon="download" color="green" round dense flat @click="downloadOnePdf(props.row)">
                             <q-tooltip>Descargar PDF</q-tooltip>
                         </q-btn>
+                        <q-btn v-if="props.row.status?.index === 1" icon="delete" color="negative" round dense flat
+                            @click="confirmDelete(props.row)">
+                            <q-tooltip>Eliminar agenda</q-tooltip>
+                        </q-btn>
                     </div>
                 </q-td>
             </template>
@@ -302,6 +306,24 @@ watch(signedSchedules, (val) => {
     tableRows.value = val
 }, { immediate: true })
 
+
+async function confirmDelete(row) {
+    $q.dialog({
+        title: 'Eliminar agenda',
+        message: '¿Está seguro de que desea eliminar esta agenda? Esta acción no se puede deshacer.',
+        ok: { label: 'Eliminar', color: 'negative', icon: 'delete' },
+        cancel: { label: 'Cancelar', color: 'primary', flat: true },
+        persistent: true
+    }).onOk(async () => {
+        const { status } = await scheduleStore.deleteSchedule(row._id)
+        if (status === 200) {
+            $q.notify({ type: 'positive', message: 'Agenda eliminada exitosamente' })
+            await loadSchedules()
+        } else {
+            $q.notify({ type: 'negative', message: 'Error al eliminar la agenda' })
+        }
+    })
+}
 
 onMounted(loadSchedules)
 </script>

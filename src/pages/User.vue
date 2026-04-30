@@ -715,8 +715,8 @@ function abrirEditar(data) {
         regional.value = data.regional ? { label: data.regional.name, data: data.regional._id } : null
         institute.value = data.institute ? { label: data.institute.name, data: data.institute._id } : null
         contractNumber.value = data.contract?.number || ''
-        contractDate.value.start = data.contract?.date?.start || ''
-        contractDate.value.end = data.contract?.date?.end || ''
+        contractDate.value.start = data.contract?.date?.start ? data.contract.date.start.substring(0, 10) : ''
+        contractDate.value.end = data.contract?.date?.end ? data.contract.date.end.substring(0, 10) : ''
         object.value = data.object || ''
         paymaster.value = data.paymaster?._id || null
         supervisor.value = data.supervisor?._id || null
