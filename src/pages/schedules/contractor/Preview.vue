@@ -478,8 +478,12 @@
                 <div
                   style="flex: 0 0 13%; border-right: 1px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3px; font-weight: bold; line-height: 1.3; min-height: 22px;">
                   <template v-if="item.startTime || item.endTime">
-                    <span>HORA: {{ item.startTime || '--:--' }} {{ ampm(item.startTime) }}</span>
-                    <span v-if="item.endTime">a {{ item.endTime }} {{ ampm(item.endTime) }}</span>
+                    <span>
+                      HORA: {{ item.startTime ? formatMilitaryWithPeriod(item.startTime) : '--:--' }}
+                    </span>
+                    <span v-if="item.endTime">
+                      a {{ formatMilitaryWithPeriod(item.endTime) }}
+                    </span>
                   </template>
                   <template v-else>
                     <span>--:--</span>
@@ -503,7 +507,7 @@
             </div>
             <div style="flex: 1; padding: 3px 6px; display: flex; align-items: center; justify-content: center;">
               <span v-if="returnRoute && returnRoute.length">{{returnRoute.map(r => r.label || r.data).join(' - ')
-              }}</span>
+                }}</span>
               <span v-else>-</span>
             </div>
           </div>
@@ -641,10 +645,15 @@ import { useUserStore } from '../../../stores/user.js'
 const $q = useQuasar()
 const userStore = useUserStore()
 
-const ampm = (time) => {
+const formatMilitaryWithPeriod = (time) => {
   if (!time) return ''
-  const h = parseInt(time.split(':')[0], 10)
-  return h >= 12 ? 'PM' : 'AM'
+
+  let [hours, minutes] = time.split(':')
+  hours = parseInt(hours)
+
+  const period = hours >= 12 ? 'PM' : 'AM'
+
+  return `${hours.toString().padStart(2, '0')}:${minutes} ${period}`
 }
 
 // En un computed o cuando cargues los datos
