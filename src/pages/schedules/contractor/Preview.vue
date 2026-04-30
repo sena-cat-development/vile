@@ -479,10 +479,10 @@
                   style="flex: 0 0 13%; border-right: 1px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3px; font-weight: bold; line-height: 1.3; min-height: 22px;">
                   <template v-if="item.startTime || item.endTime">
                     <span>
-                      HORA: {{ item.startTime ? formatMilitaryWithPeriod(item.startTime) : '--:--' }}
+                      HORA: {{ formatMilitary(item.startTime) }}
                     </span>
                     <span v-if="item.endTime">
-                      a {{ formatMilitaryWithPeriod(item.endTime) }}
+                      a {{ formatMilitary(item.endTime) }}
                     </span>
                   </template>
                   <template v-else>
@@ -507,7 +507,7 @@
             </div>
             <div style="flex: 1; padding: 3px 6px; display: flex; align-items: center; justify-content: center;">
               <span v-if="returnRoute && returnRoute.length">{{returnRoute.map(r => r.label || r.data).join(' - ')
-                }}</span>
+              }}</span>
               <span v-else>-</span>
             </div>
           </div>
@@ -644,16 +644,8 @@ import { useUserStore } from '../../../stores/user.js'
 
 const $q = useQuasar()
 const userStore = useUserStore()
-
-const formatMilitaryWithPeriod = (time) => {
-  if (!time) return ''
-
-  let [hours, minutes] = time.split(':')
-  hours = parseInt(hours)
-
-  const period = hours >= 12 ? 'PM' : 'AM'
-
-  return `${hours.toString().padStart(2, '0')}:${minutes} ${period}`
+const formatMilitary = (time) => {
+  return time || '--:--'
 }
 
 // En un computed o cuando cargues los datos
