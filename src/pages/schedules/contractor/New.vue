@@ -836,7 +836,7 @@
                                                     </div>
 
                                                     <!-- Hora Inicio -->
-                                                    <div class="col-2">
+                                                    <div class="col-3">
                                                         <q-input v-model="item.startTime" type="time"
                                                             label="Hora inicio" filled stack-label class="text-body1"
                                                             @update:model-value="val => {
@@ -844,24 +844,15 @@
                                                                 if (index === 0 && itemIndex === 0) syncHoursAllDays('startTime')
                                                             }" />
                                                     </div>
-                                                    <div class="col-1 flex items-center justify-center q-pt-sm">
-                                                        <q-btn-toggle v-model="item.startPeriod" toggle-color="primary"
-                                                            size="xs" :options="[{ label: 'AM', value: 'AM' }, { label: 'PM', value: 'PM' }]" />
-                                                    </div>
 
                                                     <!-- Hora Fin -->
-                                                    <div class="col-2">
+                                                    <div class="col-3">
                                                         <q-input v-model="item.endTime" type="time" label="Hora fin"
                                                             filled stack-label class="text-body1" @update:model-value="val => {
                                                                 item.endTime = val || null
                                                                 if (index === 0 && itemIndex === 0) syncHoursAllDays('endTime')
                                                             }" />
                                                     </div>
-                                                    <div class="col-1 flex items-center justify-center q-pt-sm">
-                                                        <q-btn-toggle v-model="item.endPeriod" toggle-color="primary"
-                                                            size="xs" :options="[{ label: 'AM', value: 'AM' }, { label: 'PM', value: 'PM' }]" />
-                                                    </div>
-
 
                                                     <!-- Botón Eliminar -->
                                                     <div class="col-2 flex justify-center">
