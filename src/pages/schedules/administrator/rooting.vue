@@ -449,7 +449,7 @@ COLUMNAS PRINCIPAL
 ===================== */
 const columns = [
     { name: 'name', label: 'Nombre', field: 'name', align: 'center', sortable: true },
-    { name: 'totalAgendas', label: 'Total Agendas', field: 'totalAgendas', align: 'center', sortable: true },
+    { name: 'totalAgendas', label: 'Total De Legalizaciones', field: 'totalAgendas', align: 'center', sortable: true },
     { name: 'actions', label: 'Acciones', align: 'center' }
 ]
 
