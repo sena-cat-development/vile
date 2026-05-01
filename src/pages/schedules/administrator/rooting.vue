@@ -7,7 +7,7 @@
                     <div class="row items-center q-gutter-sm">
                         <q-icon name="assignment" size="2rem" color="primary" />
                         <div>
-                            <div class="text-h5 text-weight-bold text-grey-9">Control de Radicaciones </div>
+                            <div class="text-h5 text-weight-bold text-grey-9">Control de Radicaciones 2 </div>
                             <div class="text-caption text-grey-6">Gestión y seguimiento de Legalizaciones radicadas</div>
                         </div>
                     </div>
