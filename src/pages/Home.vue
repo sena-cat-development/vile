@@ -187,9 +187,9 @@
                                 <span class="text-caption text-grey-7">({{ new Date().getFullYear() }})</span>
                             </h6>
                             <div class="chart-controls">
-                                <q-select v-model="viewMode" :options="[{ label: 'Por mes', value: 'month' }, { label: 'Todo el año', value: 'year' }]"
+                                <q-select v-model="viewModeAgenda" :options="[{ label: 'Por mes', value: 'month' }, { label: 'Todo el año', value: 'year' }]"
                                     emit-value map-options dense outlined class="control-select" />
-                                <q-select v-if="viewMode === 'month'" v-model="selectedMonth" :options="monthOptions"
+                                <q-select v-if="viewModeAgenda === 'month'" v-model="selectedMonthAgenda" :options="monthOptions"
                                     emit-value map-options dense outlined class="control-select" />
                             </div>
                         </div>
@@ -1959,6 +1959,8 @@ onBeforeUnmount(() => {
     if (cdpChart) cdpChart.destroy()
     if (rolesAdminChart) rolesAdminChart.destroy()
     if (estadoAdminChart) estadoAdminChart.destroy()
+    if (legalizacionesChart) legalizacionesChart.destroy()
+    if (agendasChart) agendasChart.destroy()
 })
 
 
@@ -1972,6 +1974,11 @@ watch([viewMode, selectedMonth], async () => {
 watch([viewModeLegal, selectedMonthLegal], async () => {
     await nextTick()
     crearGraficaLegalizaciones()
+})
+
+watch([viewModeAgenda, selectedMonthAgenda], async () => {
+    await nextTick()
+    crearGraficaAgendasMes()
 })
 
 

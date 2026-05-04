@@ -4,9 +4,32 @@
         <div v-if="!showPreview" class="row justify-center q-pt-md">
             <div class="col-8 q-mt-md" style="width: 90%;">
 
+                <!-- FILTROS -->
+                <q-card flat bordered class="q-pa-sm q-mb-md">
+                    <div class="row q-gutter-sm items-end">
+                        <q-input dense v-model="filter" placeholder="Buscar..." class="col" clearable>
+                            <template v-slot:append>
+                                <q-icon name="search" />
+                            </template>
+                        </q-input>
+
+                        <q-select dense v-model="typeFilter" :options="typeOptions" label="Tipo de agenda"
+                            emit-value map-options clearable style="min-width: 170px" />
+
+                        <q-input dense v-model="dateFrom" type="date" label="Desde"
+                            style="min-width: 150px" clearable />
+
+                        <q-input dense v-model="dateTo" type="date" label="Hasta"
+                            style="min-width: 150px" clearable />
+
+                        <q-btn flat dense icon="filter_alt_off" label="Limpiar filtros"
+                            color="grey" @click="clearFilters" />
+                    </div>
+                </q-card>
+
                 <!-- TABLA MIA -->
-                <q-table :loading="cargando" class="my-sticky-header-table" :filter="filter" :columns="columns"
-                    :rows="rows" row-key="_id">
+                <q-table :loading="cargando" class="my-sticky-header-table" :columns="columns"
+                    :rows="filteredRows" row-key="_id">
 
                     <template v-slot:body-cell-opciones="props">
                         <q-td :props="props">
@@ -121,14 +144,6 @@
                                 </div>
                             </div>
                         </q-td>
-                    </template>
-
-                    <template v-slot:top-right>
-                        <q-input dense debounce="300" color="primary" v-model="filter" placeholder="Buscar">
-                            <template v-slot:append>
-                                <q-icon name="search" />
-                            </template>
-                        </q-input>
                     </template>
 
                 </q-table>
@@ -298,14 +313,14 @@
 
 <script setup>
 
-import { ref, onBeforeMount, nextTick } from 'vue'
+import { ref, computed, onBeforeMount, nextTick } from 'vue'
 import { useScheduleStore } from '../../stores/schedule.js'
 import { showNotify } from '../../components/notify.js'
 import { useUserStore } from '../../stores/user.js'
 import { useQuasar } from 'quasar'
 import { jsPDF } from "jspdf";
 import html2canvas from 'html2canvas';
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 
 
@@ -314,9 +329,8 @@ import Preview from './contractor/Preview.vue'
 import OtherPreview from './public/Preview.vue'
 
 const scheduleStore = useScheduleStore()
-
-
 const userStore = useUserStore()
+const routeQuery = useRoute()
 
 const $q = useQuasar()
 
@@ -491,6 +505,7 @@ console.log('👤 ROLE:', user.value.role.data)
 
             rows.value = allSchedules.filter(schedule =>
                 schedule.typeSchedule === 'contractor' &&
+                schedule.status?.data !== 'Agenda rechazada' &&
                 (schedule.status.index < 2 || !schedule.signature?.supervisor)
             )
         }
@@ -516,6 +531,16 @@ console.log('👤 ROLE:', user.value.role.data)
             })
         }
 
+        const openId = routeQuery.query.open
+        if (openId) {
+            const target = rows.value.find(r => r._id === openId)
+            if (target) {
+                row.value = target
+                showPreview.value = true
+                showOther.value = target.typeSchedule !== 'contractor'
+            }
+        }
+
     } catch (error) {
         showNotify('Error al cargar las solicitudes', 'negative')
         console.error(error)
@@ -539,7 +564,8 @@ async function recargar() {
             })
 
             rows.value = allSchedules.filter(schedule =>
-                schedule.status.index < 2 || !schedule.signature?.supervisor
+                schedule.status?.data !== 'Agenda rechazada' &&
+                (schedule.status.index < 2 || !schedule.signature?.supervisor)
             )
         }
 
@@ -640,7 +666,67 @@ const user = ref(null)
 
 const rows = ref([])
 let filter = ref('')
+const typeFilter = ref(null)
+const dateFrom = ref('')
+const dateTo = ref('')
 const row = ref(null)
+
+const typeOptions = [
+    { label: 'Contratista', value: 'contractor' },
+    { label: 'Funcionario', value: 'other' }
+]
+
+const filteredRows = computed(() => {
+    let result = rows.value
+
+    if (typeFilter.value) {
+        if (typeFilter.value === 'other') {
+            result = result.filter(r => r.typeSchedule !== 'contractor')
+        } else {
+            result = result.filter(r => r.typeSchedule === typeFilter.value)
+        }
+    }
+
+    if (dateFrom.value) {
+        result = result.filter(r => r.tripStart >= dateFrom.value)
+    }
+
+    if (dateTo.value) {
+        result = result.filter(r => r.tripEnd <= dateTo.value)
+    }
+
+    if (filter.value) {
+        const q = filter.value.toLowerCase()
+        result = result.filter(r => {
+            const name = r.typeSchedule === 'contractor'
+                ? r.contract?.contractorName
+                : r.contract?.publicName
+            const place = r.place || r.places?.[0]?.data || r.regional || r.institute || ''
+            const company = r.company || r.institutes?.[0]?.data || ''
+            const route = [
+                r.route?.go?.[0]?.data,
+                r.route?.go?.at(-1)?.data,
+                r.route?.return?.[0]?.data,
+                r.route?.return?.at(-1)?.data
+            ].filter(Boolean).join(' ')
+            return (
+                name?.toLowerCase().includes(q) ||
+                place?.toLowerCase().includes(q) ||
+                company?.toLowerCase().includes(q) ||
+                route?.toLowerCase().includes(q)
+            )
+        })
+    }
+
+    return result
+})
+
+function clearFilters() {
+    filter.value = ''
+    typeFilter.value = null
+    dateFrom.value = ''
+    dateTo.value = ''
+}
 
 const showPreview = ref(false)
 

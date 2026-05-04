@@ -1,5 +1,5 @@
 <template>
-  < <q-page class="q-pa-md">
+  <q-page class="q-pa-md">
     <div class="row justify-center">
 
       <div class="col-12 col-md-10 col-lg-9">
@@ -20,11 +20,10 @@
 
             <!-- INSTITUTO -->
             <q-select v-model="institute" :options="instituteOptions" label="Instituto" outlined emit-value map-options
-              :disable="!regional" />
+              :disable="!regional" class="q-mb-md" />
 
             <!-- LUGAR -->
             <q-input v-model="place" label="Lugar" outlined class="q-mb-md" />
-
 
             <!-- EMPRESA -->
             <q-input v-model="company" label="Empresa" outlined class="q-mb-md" />
@@ -50,49 +49,57 @@
             <div class="q-mb-md">
               <div class="text-subtitle1 q-mb-sm">Ruta de Ida</div>
 
-              <q-card flat bordered class="q-pa-md bg-grey-2">
+              <div v-for="(tramo, index) in routeGo" :key="index">
+                <q-card flat bordered class="q-pa-md bg-grey-2 q-mb-sm">
 
-                <!-- OTRO DESTINO (todas las rutas juntas) -->
-                <q-input v-model="routeGo[0].legacy" label="Otro destino" outlined dense class="q-mb-md" />
+                  <q-input v-model="tramo.legacy" label="Otro destino" outlined dense class="q-mb-md" />
 
-                <!-- DEPARTAMENTO -->
-                <q-select v-model="routeGo[0].county" :options="countyOptions" label="Departamento" outlined dense
-                  emit-value map-options class="q-mb-md" @update:model-value="val => onCountyChange(val, 0, 'go')" />
+                  <q-select v-model="tramo.county" :options="countyOptions" label="Departamento" outlined dense
+                    emit-value map-options class="q-mb-md"
+                    @update:model-value="val => onCountyChange(val, index, 'go')" />
 
-                <!-- MUNICIPIO -->
-                <q-select v-model="routeGo[0].city" :options="cityOptionsByKey['go-0'] || []"
-                  label="Seleccionar Municipio" outlined dense multiple emit-value map-options
-                  :disable="!routeGo[0].county" />
+                  <q-select v-model="tramo.city" :options="cityOptionsByKey[`go-${index}`] || []"
+                    label="Seleccionar Municipio" outlined dense multiple emit-value map-options
+                    :disable="!tramo.county" />
 
-              </q-card>
+                  <div class="row justify-end q-mt-sm" v-if="routeGo.length > 1">
+                    <q-btn icon="delete" label="Eliminar tramo" flat dense color="negative" size="sm"
+                      @click="routeGo.splice(index, 1)" />
+                  </div>
+
+                </q-card>
+              </div>
+
+              <q-btn icon="add" label="Agregar tramo" flat dense color="primary" @click="agregarRutaIda" />
             </div>
 
             <!-- RUTA DE REGRESO -->
             <div class="q-mb-md">
               <div class="text-subtitle1 q-mb-sm">Ruta de Regreso</div>
 
-              <q-card flat bordered class="q-pa-md bg-grey-2">
+              <div v-for="(tramo, index) in routeReturn" :key="index">
+                <q-card flat bordered class="q-pa-md bg-grey-2 q-mb-sm">
 
-                <!-- OTRO DESTINO -->
-                <q-input v-model="routeReturn[0].legacy" label="Otro destino"
-                  placeholder="Escribe un destino personalizado" outlined dense class="q-mb-md" />
+                  <q-input v-model="tramo.legacy" label="Otro destino"
+                    placeholder="Escribe un destino personalizado" outlined dense class="q-mb-md" />
 
-                <!-- DEPARTAMENTO -->
-                <q-select v-model="routeReturn[0].county" :options="countyOptions" label="Departamento" outlined dense
-                  emit-value map-options class="q-mb-md"
-                  @update:model-value="val => onCountyChange(val, 0, 'return')" />
+                  <q-select v-model="tramo.county" :options="countyOptions" label="Departamento" outlined dense
+                    emit-value map-options class="q-mb-md"
+                    @update:model-value="val => onCountyChange(val, index, 'return')" />
 
+                  <q-select v-model="tramo.city" :options="cityOptionsByKey[`return-${index}`] || []"
+                    label="Seleccionar Municipio" outlined dense multiple emit-value map-options
+                    :disable="!tramo.county" />
 
-                <!-- MUNICIPIO -->
-                <q-select v-model="routeReturn[0].city" :options="cityOptionsByKey['return-0'] || []"
-                  label="Seleccionar Municipio" outlined dense multiple emit-value map-options
-                  :disable="!routeReturn[0].county"/>
+                  <div class="row justify-end q-mt-sm" v-if="routeReturn.length > 1">
+                    <q-btn icon="delete" label="Eliminar tramo" flat dense color="negative" size="sm"
+                      @click="routeReturn.splice(index, 1)" />
+                  </div>
 
-                <div class="row justify-end">
-                  <q-btn color="positive" icon="check" label="AGREGAR" unelevated />
-                </div>
+                </q-card>
+              </div>
 
-              </q-card>
+              <q-btn icon="add" label="Agregar tramo" flat dense color="primary" @click="agregarRutaRegreso" />
             </div>
 
 
@@ -236,7 +243,7 @@
         </q-card-section>
       </q-card>
     </q-dialog>
-    </q-page>
+  </q-page>
 </template>
 
 <script setup>
@@ -256,7 +263,6 @@ const cdp = reactive({ selected: null })
 const cdpOptions = computed(() =>
   amountStore.amounts.filter(a => a.type === 'cdp')
 )
-
 
 const route = useRoute()
 const router = useRouter()
@@ -293,23 +299,14 @@ const contractMail = ref('')
 const contractObject = ref('')
 const contractDate = ref('')
 
-/* RUTAS - Ahora siempre en formato nuevo con county/city */
+/* RUTAS */
 const routeGo = ref([
-  {
-    legacy: '',     // ← aquí va "Bogotá"
-    county: null,
-    city: []
-  }
+  { legacy: '', county: null, city: [] }
 ])
 
 const routeReturn = ref([
-  {
-    legacy: '',
-    county: null,
-    city: []
-  }
+  { legacy: '', county: null, city: [] }
 ])
-
 
 const countyOptions = ref([])
 const cityOptionsByKey = ref({})
@@ -358,7 +355,6 @@ const loadCities = async (countyIds, index, type) => {
     )
   }
 
-  // Eliminar duplicados
   const unique = Object.values(
     cities.reduce((acc, c) => {
       acc[c.value] = c
@@ -375,8 +371,6 @@ onBeforeMount(async () => {
   await Promise.all([loadCounties(), amountStore.fetchAmounts()])
 
   try {
-    console.log('ID recibido:', route.params.id)
-
     /* 1️⃣ CARGAR REGIONALES */
     const regionalRes = await scheduleStore.getCounty()
     regionalOptions.value = regionalRes.data.map(r => ({
@@ -384,22 +378,14 @@ onBeforeMount(async () => {
       value: r._id
     }))
 
-
-
     /* 2️⃣ CARGAR AGENDA */
     const res = await scheduleStore.getScheduleById(route.params.id)
-    console.log('Respuesta completa:', res)
-
     const s = res.data
 
-    // Guardar datos completos para la vista previa
     scheduleData.value = s
 
     if (!s || !s._id) {
-      Notify.create({
-        type: 'warning',
-        message: 'No se encontró la agenda'
-      })
+      Notify.create({ type: 'warning', message: 'No se encontró la agenda' })
       router.back()
       return
     }
@@ -412,7 +398,6 @@ onBeforeMount(async () => {
       s.regional && typeof s.regional === 'object'
         ? s.regional._id
         : s.regional ?? null
-
 
     /* 4️⃣ CARGAR INSTITUTOS SEGÚN REGIONAL */
     if (regional.value) {
@@ -427,7 +412,6 @@ onBeforeMount(async () => {
       s.institute && typeof s.institute === 'object'
         ? s.institute._id
         : s.institute ?? null
-
 
     place.value = s.place ?? ''
     company.value = s.company ?? ''
@@ -463,65 +447,52 @@ onBeforeMount(async () => {
       }
     }
 
-    /* 8️⃣ RUTAS - Convertir formato legacy a selects vacíos */
+    /* 8️⃣ RUTAS - Cargar datos existentes en campo legacy para que sean visibles */
     if (s.route) {
-      const mapRouteData = (arr) => {
-        if (!Array.isArray(arr) || arr.length === 0) return [{ county: [], city: [] }];
-
-        return arr.map(r => {
-          // Si el campo es legacy y viene como 'data', lo tratamos como ciudad
-          // Si el select es multiple, el valor DEBE ser un array [v]
-          const cityValue = r.city ? (Array.isArray(r.city) ? r.city : [r.city])
-            : (r.data ? [r.data] : []);
-
-          const countyValue = r.county ? (Array.isArray(r.county) ? r.county : [r.county])
-            : [];
-
-          return {
-            county: countyValue,
-            city: cityValue,
-            _id: r._id // Mantener el ID original del objeto de ruta
-          };
-        });
-      };
-
       if (s.route?.go?.length) {
         routeGo.value = [{
+          legacy: s.route.go.map(r => r.data).filter(Boolean).join(' - '),
           county: null,
-          city: s.route.go.map(r => r.data), // 🔥 AQUÍ
+          city: [],
         }]
       }
 
       if (s.route?.return?.length) {
         routeReturn.value = [{
-          county: [],
-          city: s.route.return.map(r => r.data),
+          legacy: s.route.return.map(r => r.data).filter(Boolean).join(' - '),
+          county: null,
+          city: [],
         }]
       }
 
-
-
-      // 2. CARGAR LAS LISTAS DE CIUDADES (Sin esto, el select de ciudad sale vacío)
       nextTick(() => {
         routeGo.value.forEach((item, index) => {
-          if (item.county > 0) {
-            loadCities(item.county, index, 'go');
+          if (Array.isArray(item.county) && item.county.length > 0) {
+            loadCities(item.county, index, 'go')
           }
-        });
+        })
         routeReturn.value.forEach((item, index) => {
-          if (item.county > 0) {
-            loadCities(item.county, index, 'return');
+          if (Array.isArray(item.county) && item.county.length > 0) {
+            loadCities(item.county, index, 'return')
           }
-        });
-      });
+        })
+      })
     }
+
+    /* 9️⃣ MEDIOS DE TRANSPORTE */
+    meansTransportGo.value = Array.isArray(s.meanstransport?.go)
+      ? s.meanstransport.go.map(m => (typeof m === 'object' ? m.data : m) || '')
+      : []
+    meansTransportReturn.value = Array.isArray(s.meanstransport?.return)
+      ? s.meanstransport.return.map(m => (typeof m === 'object' ? m.data : m) || '')
+      : []
 
     /* 🔟 FUNCIONES */
     duties.value = Array.isArray(s.duties)
       ? s.duties.map(d => typeof d === 'object' ? d.data : d)
       : []
 
-    /* 1️⃣1️⃣ ACTIVIDADES */
+    /* 🔟 ACTIVIDADES */
     activities.value = Array.isArray(s.activities)
       ? s.activities.map(act => ({
         date: act.date || '',
@@ -537,7 +508,7 @@ onBeforeMount(async () => {
       }))
       : []
 
-    /* 1️⃣2️⃣ OBSERVACIONES */
+    /* 1️⃣1️⃣ OBSERVACIONES */
     observations.value = Array.isArray(s.observations)
       ? s.observations.map(obs => ({
         key: obs.key || '',
@@ -557,16 +528,13 @@ onBeforeMount(async () => {
       cdp.selected = null
     }
 
-    /* 1️⃣3️⃣ RESULTADOS Y CONCLUSIONES */
+    /* 1️⃣2️⃣ RESULTADOS Y CONCLUSIONES */
     results.value = Array.isArray(s.results) ? [...s.results] : []
     conclusions.value = Array.isArray(s.conclusions) ? [...s.conclusions] : []
 
   } catch (error) {
     console.error(error)
-    Notify.create({
-      type: 'negative',
-      message: 'Error al cargar la agenda'
-    })
+    Notify.create({ type: 'negative', message: 'Error al cargar la agenda' })
     router.back()
   }
 })
@@ -575,24 +543,20 @@ const convertirRutaAString = async (rutas) => {
   const rutasConvertidas = []
 
   for (const r of rutas) {
-    // Si no hay ciudades seleccionadas ni datos legacy
+    // Sin ciudades seleccionadas: usar el campo legacy si existe
     if (!r.city?.length) {
-      rutasConvertidas.push({ data: '' })
+      rutasConvertidas.push({ data: r.legacy || '' })
       continue
     }
 
     let cityNames = []
 
-    // 1. Manejar casos donde r.city ya tiene los nombres (Strings legacy)
-    // Si el primer elemento no parece un ID de MongoDB (ej. tiene espacios o es corto),
-    // asumimos que ya son nombres.
     const isLegacy = r.city.some(c => c && c.length > 0 && !/^[0-9a-fA-F]{24}$/.test(c))
 
     if (isLegacy) {
       cityNames = [...r.city]
     } else {
-      // 2. Si son IDs, buscamos en la API
-      for (const countyId of (r.county || [])) {
+      for (const countyId of (r.county ? [r.county] : [])) {
         try {
           const cityRes = await scheduleStore.getCity(countyId)
           const cities = cityRes.data
@@ -605,14 +569,12 @@ const convertirRutaAString = async (rutas) => {
       }
     }
 
-    // Si después de buscar no hay nombres (caso donde el ID no se encontró en la API)
-    // usamos lo que esté en r.city para no dejarlo vacío
     if (cityNames.length === 0 && r.city.length > 0) {
       cityNames = [...r.city]
     }
 
     rutasConvertidas.push({
-      data: cityNames.join(' - ') || 'Sin especificar'
+      data: cityNames.join(' - ') || r.legacy || 'Sin especificar'
     })
   }
 
@@ -624,15 +586,11 @@ async function guardar() {
   loading.value = true
 
   try {
-    // Convertir rutas a formato String según el modelo
-
     const regionalSeleccionada = regionalOptions.value.find(o => o.value === regional.value)
     const institutoSeleccionado = instituteOptions.value.find(o => o.value === institute.value)
 
     const goConverted = await convertirRutaAString(routeGo.value)
     const returnConverted = await convertirRutaAString(routeReturn.value)
-
-
 
     const payload = {
       typeSchedule: typeSchedule.value,
@@ -687,29 +645,20 @@ async function guardar() {
       conclusions: conclusions.value
     }
 
-    console.log('Payload a enviar:', payload)
-
     await scheduleStore.putSchedule(payload, route.params.id)
 
-    Notify.create({
-      type: 'positive',
-      message: 'Agenda actualizada correctamente'
-    })
-
-    router.back()
+    Notify.create({ type: 'positive', message: 'Agenda actualizada correctamente' })
+    router.push({ path: '/layout/agenda/solicitudes', query: { open: route.params.id } })
   } catch (error) {
-    console.error('Error completo:', error)
-    Notify.create({
-      type: 'negative',
-      message: 'Error al guardar la agenda'
-    })
+    console.error('Error al guardar:', error)
+    Notify.create({ type: 'negative', message: 'Error al guardar la agenda' })
   } finally {
     loading.value = false
   }
 }
 
 function volver() {
-  router.back()
+  router.push({ path: '/layout/agenda/solicitudes', query: { open: route.params.id } })
 }
 
 /* VISTA PREVIA */
@@ -778,37 +727,7 @@ async function abrirVistaPrevia() {
     signature: scheduleData.value?.signature || {}
   }
 
-  console.log('Vista previa con datos:', scheduleData.value)
   showPreview.value = true
-}
-
-function generarActividadesPorRango(fechaInicio, fechaFin) {
-  if (!fechaInicio || !fechaFin) return []
-
-  const inicio = new Date(fechaInicio)
-  const fin = new Date(fechaFin)
-
-  if (inicio > fin) return []
-
-  const dias = []
-  const fechaActual = new Date(inicio)
-
-  while (fechaActual <= fin) {
-    dias.push({
-      date: fechaActual.toISOString().slice(0, 10),
-      items: [
-        {
-          data: '',
-          startTime: '08:00',
-          endTime: '12:00'
-        }
-      ]
-    })
-
-    fechaActual.setDate(fechaActual.getDate() + 1)
-  }
-
-  return dias
 }
 
 const onRegionalChange = async (countyId) => {
@@ -826,11 +745,11 @@ const onRegionalChange = async (countyId) => {
 }
 
 function agregarRutaIda() {
-  routeGo.value.push({ county: [], city: [] })
+  routeGo.value.push({ legacy: '', county: null, city: [] })
 }
 
 function agregarRutaRegreso() {
-  routeReturn.value.push({ county: [], city: [] })
+  routeReturn.value.push({ legacy: '', county: null, city: [] })
 }
 
 function onCountyChange(val, index, type) {
@@ -842,15 +761,10 @@ function onCountyChange(val, index, type) {
 
   delete cityOptionsByKey.value[`${type}-${index}`]
 
-  // 👇 ahora es un solo departamento
   if (val) {
     loadCities([val], index, type)
   }
 }
-
-
-
-
 
 watch(
   () => cdp.selected,
@@ -869,51 +783,28 @@ watch(
 
 watch([tripStart, tripEnd], ([newStart, newEnd]) => {
   if (!newStart || !newEnd) return
-  if (activities.value.length > 0) return
 
-  activities.value = generarActividadesPorRango(newStart, newEnd)
-})
+  const start = new Date(newStart)
+  const end = new Date(newEnd)
 
-// Función para generar el rango de fechas
-const updateActivitiesByRange = () => {
-  if (!tripStart.value || !tripEnd.value) return
-
-  const start = new Date(tripStart.value)
-  const end = new Date(tripEnd.value)
-
-  if (start > end) return // Evitar fechas inválidas
+  if (start > end) return
 
   const newActivities = []
   let current = new Date(start)
 
   while (current <= end) {
     const dateString = current.toISOString().split('T')[0]
+    const existing = activities.value.find(a => a.date === dateString)
 
-    // 💡 IMPORTANTE: Buscamos si ya existe una actividad para esta fecha
-    // para no borrar lo que el usuario ya escribió.
-    const existingActivity = activities.value.find(a => a.date === dateString)
+    newActivities.push(existing || {
+      date: dateString,
+      items: [{ data: '', startTime: null, endTime: null }]
+    })
 
-    if (existingActivity) {
-      newActivities.push(existingActivity)
-    } else {
-      // Si el día es nuevo, lo agregamos con un item vacío
-      newActivities.push({
-        date: dateString,
-        items: [{ data: '', startTime: null, endTime: null }]
-      })
-    }
-
-    // Sumar un día
     current.setDate(current.getDate() + 1)
   }
 
-  // Actualizamos el array de actividades con el nuevo rango
   activities.value = newActivities
-}
-
-// Observar ambos campos de fecha
-watch([tripStart, tripEnd], () => {
-  updateActivitiesByRange()
 })
 </script>
 
