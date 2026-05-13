@@ -998,7 +998,11 @@ function getPreview() {
         tripOrder: tripOrder.value,
         legalization: {
             ...row.value.legalization,
-            signature: { ...sign.value },
+            signature: {
+                contractor: sign.value.contractor ?? row.value.legalization?.signature?.contractor ?? null,
+                publicWorker: sign.value.publicWorker ?? row.value.legalization?.signature?.publicWorker ?? null,
+                supervisor: sign.value.supervisor ?? row.value.legalization?.signature?.supervisor ?? null
+            },
             documents: {
                 ...row.value?.legalization?.documents,
                 ...documentosTemporales
@@ -1236,7 +1240,8 @@ async function postLegalization() {
 
     const signatureGuardada = {
         contractor: documentosSubidos?.signatureContractor?.[0]?.url ?? sign.value.contractor,
-        publicWorker: documentosSubidos?.signaturePublicWorker?.[0]?.url ?? sign.value.publicWorker
+        publicWorker: documentosSubidos?.signaturePublicWorker?.[0]?.url ?? sign.value.publicWorker,
+        supervisor: row.value.legalization?.signature?.supervisor ?? null
     }
 
     // ✅ Construir payload para el PUT
@@ -1323,6 +1328,7 @@ async function getSign() {
             },
             legalization: {
                 signature: {
+                    ...row.value.legalization?.signature,
                     supervisor: data.sign.url
                 }
             }

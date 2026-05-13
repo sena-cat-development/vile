@@ -8,7 +8,8 @@
                         <q-icon name="assignment" size="2rem" color="primary" />
                         <div>
                             <div class="text-h5 text-weight-bold text-grey-9">Control de Radicaciones </div>
-                            <div class="text-caption text-grey-6">Gestión y seguimiento de Legalizaciones radicadas</div>
+                            <div class="text-caption text-grey-6">Gestión y seguimiento de Legalizaciones radicadas
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -148,7 +149,8 @@
                                 <template v-slot:top-title>
                                     <div class="row items-center q-gutter-sm">
                                         <q-icon name="list_alt" color="primary" />
-                                        <span class="text-subtitle1 text-weight-medium">Legalizaciones del Contratista</span>
+                                        <span class="text-subtitle1 text-weight-medium">Legalizaciones del
+                                            Contratista</span>
                                         <q-badge color="primary" rounded>{{ agendasUsuarioFiltradas.length }}</q-badge>
                                     </div>
                                 </template>
@@ -233,7 +235,8 @@
 
                             <div class="row items-center q-mb-md q-gutter-sm">
                                 <q-icon name="preview" color="primary" />
-                                <span class="text-subtitle1 text-weight-medium text-grey-8">Detalle de la Legalizacion</span>
+                                <span class="text-subtitle1 text-weight-medium text-grey-8">Detalle de la
+                                    Legalizacion</span>
                             </div>
 
                             <!-- Alerta firmas faltantes -->
@@ -321,9 +324,12 @@
                             <template v-slot:avatar>
                                 <q-icon name="warning" color="orange-7" />
                             </template>
-                            Esta acción eliminará la firma del supervisor y los documentos adjuntos, devolviendo la legalización al contratista para que vuelva a subir los archivos.
+                            Esta acción eliminará la firma del supervisor y los documentos adjuntos, devolviendo la
+                            legalización al
+                            contratista para que vuelva a subir los archivos.
                         </q-banner>
-                        <q-input v-model="observacionDevolucion" label="Observación (motivo de devolución)" outlined autofocus type="textarea" rows="3">
+                        <q-input v-model="observacionDevolucion" label="Observación (motivo de devolución)" outlined
+                            autofocus type="textarea" rows="3">
                             <template v-slot:prepend>
                                 <q-icon name="comment" color="grey-6" />
                             </template>
@@ -335,8 +341,7 @@
                     <q-card-actions align="right" class="q-pa-md">
                         <q-btn flat label="Cancelar" color="grey-7" v-close-popup />
                         <q-btn unelevated color="red-7" label="Devolver" icon="undo"
-                            :loading="devolviendo === agendaDevolver?._id"
-                            @click="confirmarDevolucion" />
+                            :loading="devolviendo === agendaDevolver?._id" @click="confirmarDevolucion" />
                     </q-card-actions>
 
                 </q-card>
@@ -469,7 +474,14 @@ const confirmarDevolucion = async () => {
                     publicWorker: agenda.legalization?.signature?.publicWorker || null,
                     supervisor: null
                 },
-                documents: {}
+                documents: {
+                    autorizacionPago: [],
+                    compromisoPresupuestal: [],
+                    asistenciaFormacion: [],
+                    tiquetes: [],
+                    interveredal: [],
+                    reintegros: []
+                }
             },
             agenda._id
         )
@@ -815,11 +827,11 @@ const guardarRadicacion = async () => {
                 agendaRadicacion.value._id,
                 lastRadication._id,
                 { radicationNumber: numeroRadicacion.value }
-              )
+            )
             : await scheduleStore.addRadication(
                 agendaRadicacion.value._id,
                 { radicationNumber: numeroRadicacion.value }
-              )
+            )
 
         if (status === 200 || status === 201) {
             const agendaIndex = agendasUsuario.value.findIndex(
