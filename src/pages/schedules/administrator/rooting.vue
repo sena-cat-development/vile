@@ -483,7 +483,7 @@ const confirmarDevolucion = async () => {
             {
                 status: {
                     index: 4,
-                    data: 'Devuelta para corrección',
+                    data: 'Legalización Rechazada',
                     justification: observacionDevolucion.value || 'Devuelta por administrador',
                     number: (agenda.status?.number || 0) + 1
                 }
@@ -595,7 +595,7 @@ const loadSchedules = async () => {
     loading.value = true
 
     try {
-        const { data } = await scheduleStore.getSchedule()
+        const { data } = await scheduleStore.getSchedule({ legalization: true })
 
         let schedules = []
 
@@ -606,9 +606,6 @@ const loadSchedules = async () => {
         } else if (data?.data) {
             schedules = data.data
         }
-
-        console.log('📊 Total schedules del API:', schedules.length)
-        console.log('📊 Índices de status:', schedules.map(s => s.status?.index))
 
         // 🔹 Agendas desde "Legalización firmada por Supervisor" (index >= 6)
         rows.value = schedules.filter(
