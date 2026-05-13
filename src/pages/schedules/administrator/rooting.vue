@@ -607,6 +607,9 @@ const loadSchedules = async () => {
             schedules = data.data
         }
 
+        console.log('📊 Total schedules del API:', schedules.length)
+        console.log('📊 Índices de status:', schedules.map(s => s.status?.index))
+
         // 🔹 Agendas desde "Legalización firmada por Supervisor" (index >= 6)
         rows.value = schedules.filter(
             s => s.status?.index >= 6
