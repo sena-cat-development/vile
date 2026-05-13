@@ -214,6 +214,12 @@
                                                 <q-tooltip>Consultar Radicación</q-tooltip>
                                             </q-btn>
 
+                                            <q-btn icon="undo" size="sm" color="red-7" flat round
+                                                :loading="devolviendo === props.row._id"
+                                                @click="abrirDialogDevolver(props.row)">
+                                                <q-tooltip>Devolver para corrección</q-tooltip>
+                                            </q-btn>
+
                                         </div>
                                     </q-td>
                                 </template>
@@ -295,6 +301,42 @@
                     <q-card-actions align="right" class="q-pa-md">
                         <q-btn flat label="Cancelar" color="grey-7" v-close-popup />
                         <q-btn unelevated color="primary" label="Guardar" icon="save" @click="guardarRadicacion" />
+                    </q-card-actions>
+
+                </q-card>
+            </q-dialog>
+
+            <!-- ═══ DIALOG: DEVOLVER LEGALIZACIÓN ═══ -->
+            <q-dialog v-model="dialogDevolver" persistent>
+                <q-card style="width: 420px; max-width: 95vw">
+
+                    <q-toolbar class="bg-red-7 text-white">
+                        <q-icon name="undo" size="sm" class="q-mr-sm" />
+                        <q-toolbar-title>Devolver Legalización</q-toolbar-title>
+                        <q-btn dense flat round icon="close" v-close-popup />
+                    </q-toolbar>
+
+                    <q-card-section class="q-pt-md">
+                        <q-banner class="bg-orange-1 text-orange-9 rounded-borders q-mb-md" rounded>
+                            <template v-slot:avatar>
+                                <q-icon name="warning" color="orange-7" />
+                            </template>
+                            Esta acción eliminará la firma del supervisor y los documentos adjuntos, devolviendo la legalización al contratista para que vuelva a subir los archivos.
+                        </q-banner>
+                        <q-input v-model="observacionDevolucion" label="Observación (motivo de devolución)" outlined autofocus type="textarea" rows="3">
+                            <template v-slot:prepend>
+                                <q-icon name="comment" color="grey-6" />
+                            </template>
+                        </q-input>
+                    </q-card-section>
+
+                    <q-separator />
+
+                    <q-card-actions align="right" class="q-pa-md">
+                        <q-btn flat label="Cancelar" color="grey-7" v-close-popup />
+                        <q-btn unelevated color="red-7" label="Devolver" icon="undo"
+                            :loading="devolviendo === agendaDevolver?._id"
+                            @click="confirmarDevolucion" />
                     </q-card-actions>
 
                 </q-card>
@@ -392,6 +434,11 @@ const dialogRadicacion = ref(false)
 const agendaRadicacion = ref(null)
 const numeroRadicacion = ref('')
 
+const dialogDevolver = ref(false)
+const agendaDevolver = ref(null)
+const observacionDevolucion = ref('')
+const devolviendo = ref(null)
+
 
 const abrirDialogRadicacion = (agenda) => {
     agendaRadicacion.value = agenda
@@ -400,6 +447,61 @@ const abrirDialogRadicacion = (agenda) => {
     numeroRadicacion.value = last?.radicationNumber || ''
 
     dialogRadicacion.value = true
+}
+
+const abrirDialogDevolver = (agenda) => {
+    agendaDevolver.value = agenda
+    observacionDevolucion.value = ''
+    dialogDevolver.value = true
+}
+
+const confirmarDevolucion = async () => {
+    if (!agendaDevolver.value) return
+
+    const agenda = agendaDevolver.value
+    devolviendo.value = agenda._id
+
+    try {
+        const { status: statusLeg } = await scheduleStore.putLegalization(
+            {
+                signature: {
+                    contractor: agenda.legalization?.signature?.contractor || null,
+                    publicWorker: agenda.legalization?.signature?.publicWorker || null,
+                    supervisor: null
+                },
+                documents: {}
+            },
+            agenda._id
+        )
+
+        if (statusLeg !== 200 && statusLeg !== 201) {
+            console.error('Error al limpiar legalización:', statusLeg)
+            return
+        }
+
+        const { status: statusSched } = await scheduleStore.putSchedule(
+            {
+                status: {
+                    index: 4,
+                    data: 'Devuelta para corrección',
+                    justification: observacionDevolucion.value || 'Devuelta por administrador',
+                    number: (agenda.status?.number || 0) + 1
+                }
+            },
+            agenda._id
+        )
+
+        if (statusSched === 200 || statusSched === 201) {
+            agendasUsuario.value = agendasUsuario.value.filter(a => a._id !== agenda._id)
+            rows.value = rows.value.filter(r => r._id !== agenda._id)
+            dialogDevolver.value = false
+            agendaDevolver.value = null
+        }
+    } catch (error) {
+        console.error('❌ Error devolviendo legalización:', error)
+    } finally {
+        devolviendo.value = null
+    }
 }
 
 

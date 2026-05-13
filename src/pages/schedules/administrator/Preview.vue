@@ -34,7 +34,7 @@
                 <p class="q-my-none q-pl-xs"><strong>CIUDAD Y FECHA</strong> (En la que se presenta el informe)</p>
             </div>
             <div class="col-12">
-                <p v-text="`San Gil - ${createdAt && currentUser.role.data !== 'user' ? date.formatDate(createdAt, 'DD/MM/YYYY') : date.formatDate(Date.now(), 'DD/MM/YYYY')}`"
+                <p v-text="`San Gil - ${createdAt ? date.formatDate(createdAt, 'DD/MM/YYYY') : date.formatDate(Date.now(), 'DD/MM/YYYY')}`"
                     class="q-my-none q-pl-sm" />
             </div>
         </div>
