@@ -890,7 +890,7 @@
                                 <q-checkbox v-model="observations.find(o => o.key === 'interveral').enabled"
                                     label="Agregar transporte interveredal" color="primary" class="q-mb-md" />
 
-                                <template v-for="element in observations.filter(o => o.enabled)" :key="element.key">
+                                <template v-for="element in observations.filter(o => o.enabled && !o.isCustom)" :key="element.key">
                                     <div class="row items-center q-mb-sm">
 
                                         <!-- TEXTO -->
@@ -944,6 +944,33 @@
                                         </div>
                                     </div>
                                 </template>
+
+                        <!-- Observaciones personalizadas -->
+                        <template v-for="element in observations.filter(o => o.isCustom)" :key="element.key">
+                            <div class="row items-center q-mb-sm">
+                                <div class="col-7 q-pa-sm">
+                                    <q-input v-model="element.text" filled label="Observación personalizada" />
+                                </div>
+                                <div class="col-3 q-pa-sm">
+                                    <q-input :model-value="money.format(element.amount)" prefix="$" filled
+                                        label="Valor"
+                                        @update:model-value="val => element.amount = Number(val.replace(/\./g, ''))" />
+                                </div>
+                                <div class="col-2 q-pa-sm flex items-center justify-center">
+                                    <q-btn
+                                        @click="observations.splice(observations.findIndex(o => o.key === element.key), 1)"
+                                        icon="delete" color="negative" round dense flat size="sm">
+                                        <q-tooltip>Eliminar</q-tooltip>
+                                    </q-btn>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div class="row justify-start q-mt-sm q-mb-sm">
+                            <q-btn
+                                @click="observations.push({ key: `custom_${Date.now()}`, text: '', amount: 0, enabled: true, fromApi: false, isCustom: true })"
+                                icon="add" label="Agregar observación manual" color="primary" outline size="sm" />
+                        </div>
                             </div>
                         </div>
 
@@ -1827,7 +1854,7 @@ function defaultObservations() {
 // exclusivos del frontend (fromApi, type, text) que el servidor puede no devolver
 function restoreObservations(serverObs) {
     const defaults = defaultObservations()
-    return defaults.map(def => {
+    const restored = defaults.map(def => {
         const saved = (serverObs || []).find(o => o.key === def.key)
         if (!saved) return def
         return {
@@ -1837,6 +1864,8 @@ function restoreObservations(serverObs) {
             text: def.text
         }
     })
+    const customs = (serverObs || []).filter(o => o.isCustom)
+    return [...restored, ...customs]
 }
 
 

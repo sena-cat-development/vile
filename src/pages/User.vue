@@ -715,8 +715,10 @@ function abrirEditar(data) {
         regional.value = data.regional ? { label: data.regional.name, data: data.regional._id } : null
         institute.value = data.institute ? { label: data.institute.name, data: data.institute._id } : null
         contractNumber.value = data.contract?.number || ''
-        contractDate.value.start = data.contract?.date?.start ? data.contract.date.start.substring(0, 10) : ''
-        contractDate.value.end = data.contract?.date?.end ? data.contract.date.end.substring(0, 10) : ''
+        contractDate.value = {
+            start: normalizeDate(data.contract?.date?.start),
+            end: normalizeDate(data.contract?.date?.end)
+        }
         object.value = data.object || ''
         paymaster.value = data.paymaster?._id || null
         supervisor.value = data.supervisor?._id || null
@@ -994,6 +996,17 @@ function normalizar(str) {
         .replace(/[\u0300-\u036f]/g, '')
 }
 
+// ─── HELPER: normalizar cualquier fecha a YYYY-MM-DD (con ceros de relleno)
+function normalizeDate(val) {
+    if (!val) return ''
+    const s = String(val).substring(0, 10)
+    const parts = s.split('-')
+    if (parts.length === 3) {
+        return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`
+    }
+    return s
+}
+
 // ─── HELPER: convertir fecha serial de XLSX.js a YYYY-MM-DD
 // XLSX.js convierte celdas de tipo fecha a número serial automáticamente
 function toISO(val) {
@@ -1005,11 +1018,15 @@ function toISO(val) {
         const dd = String(d.getUTCDate()).padStart(2, '0')
         return `${yyyy}-${mm}-${dd}`
     }
-    // Si viene como string DD-MM-AAAA → convertir a YYYY-MM-DD
+    // Si viene como string DD-MM-AAAA → convertir a YYYY-MM-DD con padding
     const s = val.toString().trim()
     const parts = s.split('-')
     if (parts.length === 3 && parts[2].length === 4) {
-        return `${parts[2]}-${parts[1]}-${parts[0]}`
+        return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`
+    }
+    // Si ya viene como YYYY-M-D, normalizar con padding
+    if (parts.length === 3 && parts[0].length === 4) {
+        return normalizeDate(s)
     }
     return s
 }

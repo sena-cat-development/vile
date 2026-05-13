@@ -171,7 +171,7 @@
       </div>
       <div
         style="flex: 0 0 8%; border-right: 1px solid black; display: flex; align-items: center; justify-content: center; padding: 2px;">
-        <p v-text="contract.date.start.slice(0, 4)" class="q-my-none" />
+        <p v-text="contract.date?.start?.slice(0, 4) || ''" class="q-my-none" />
       </div>
       <div
         style="flex: 0 0 14.9%; border-right: 1px solid black; display: flex; align-items: center; padding: 2px 4px;">
@@ -182,17 +182,17 @@
       <div
         style="flex: 0 0 9.9%; border-right: 1px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px;">
         <p class="q-my-none" style="font-size: 8px;"></p>
-        <p v-text="contract.date.end.slice(8, 10)" class="q-my-none" />
+        <p v-text="contract.date?.end?.slice(8, 10) || ''" class="q-my-none" />
       </div>
       <div
         style="flex: 0 0 7.2%; border-right: 1px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px;">
         <p class="q-my-none" style="font-size: 8px;"></p>
-        <p v-text="contract.date.end.slice(5, 7)" class="q-my-none" />
+        <p v-text="contract.date?.end?.slice(5, 7) || ''" class="q-my-none" />
       </div>
       <div
         style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px;">
         <p class="q-my-none" style="font-size: 8px;"></p>
-        <p v-text="contract.date.end.slice(2, 4)" class="q-my-none" />
+        <p v-text="contract.date?.end?.slice(2, 4) || ''" class="q-my-none" />
       </div>
     </div>
 
@@ -644,6 +644,16 @@ import { useUserStore } from '../../../stores/user.js'
 
 const $q = useQuasar()
 const userStore = useUserStore()
+const normalizeDate = (val) => {
+  if (!val) return ''
+  const s = String(val).substring(0, 10)
+  const parts = s.split('-')
+  if (parts.length === 3) {
+    return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`
+  }
+  return s
+}
+
 const formatMilitary = (time) => {
   if (!time) return '--:--'
   // Strip any AM/PM suffix that may be stored in old data
@@ -670,6 +680,7 @@ const visualObservations = computed(() => {
     }))
     .filter(o => {
       if (o.key === 'air_terminal') return true
+      if (o.isCustom) return o.enabled && !!o.text
       return o.enabled && o.amount > 0
     })
 })
@@ -716,7 +727,13 @@ onBeforeMount(async () => {
 
   contractor.value = user.name
   identification.value = user.identification
-  contract.value = user.contract
+  contract.value = {
+    number: user.contract?.number || null,
+    date: {
+      start: normalizeDate(user.contract?.date?.start),
+      end: normalizeDate(user.contract?.date?.end)
+    }
+  }
   object.value = props.row.contract.object
   currentRegional.value = props.row.contract.regional
   currentInstitute.value = props.row.contract.institute
