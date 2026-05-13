@@ -1958,6 +1958,9 @@ async function createSchedule() {
     } else if (!infoClassification.value) {
         showNotify('Seleccione la clasificación de la información', 'negative')
 
+    } else if (!cdp.selected) {
+        showNotify('Seleccione el CDP', 'negative')
+
     } else if (!activities.value || activities.value.length === 0) {
         showNotify('Debe agregar al menos una actividad', 'negative')
 
@@ -2130,6 +2133,8 @@ async function updateSchedule() {
         showNotify('No hay obligaciones', 'negative')
     } else if (observations.value.length === 0) {
         showNotify('No hay observaciones', 'negative')
+    } else if (!cdp.selected) {
+        showNotify('Seleccione el CDP', 'negative')
     } else {
         await scheduleStore.putSchedule({
             userId: currentUser.value._id,
