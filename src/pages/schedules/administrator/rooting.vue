@@ -521,11 +521,18 @@ const pdfUrl = ref(null)
 const dialogDocs = ref(false)
 
 const verDocumentos = async (agenda) => {
-    agendaDocs.value = agenda
+    agendaDocs.value = null
     archivosDocs.value = []
     dialogDocs.value = true
 
-    const docs = agenda.legalization?.documents
+    try {
+        const { data } = await scheduleStore.getScheduleById(agenda._id)
+        agendaDocs.value = data || agenda
+    } catch {
+        agendaDocs.value = agenda
+    }
+
+    const docs = agendaDocs.value.legalization?.documents
     const archivos = [
         ...(docs?.autorizacionPago || []),
         ...(docs?.compromisoPresupuestal || []),
@@ -546,6 +553,7 @@ const verDocumentos = async (agenda) => {
         })
     )
 }
+
 
 
 
